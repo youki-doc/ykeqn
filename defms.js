@@ -1,21 +1,23 @@
 exports.defms = function(defm){
 	defm('upper choose lower', '(upper above lower)');
-	defm("sin", '"sin" rm');
-	defm("cos", '"cos" rm');
-	defm("tan", '"tan" rm');
-	defm("cot", '"cot" rm');
-	defm("sec", '"sec" rm');
-	defm("csc", '"csc" rm');
-	defm("ln", '"ln" rm');
-	defm("lg", '"lg" rm');
-	defm("log", '"log" rm');
-	defm("lb", '"lb" rm');
-	defm("lim", '"lim" rm');
-	defm("sup", '"sup" rm');
-	defm("inf", '"inf" rm');
-	defm("erf", '"erf" rm');
-	defm("erfc", '"erfc" rm');
+	defm('f mathfn', 'f rm forcerightspace');
+	defm("sin", '"sin" mathfn');
+	defm("cos", '"cos" mathfn');
+	defm("tan", '"tan" mathfn');
+	defm("cot", '"cot" mathfn');
+	defm("sec", '"sec" mathfn');
+	defm("csc", '"csc" mathfn');
+	defm("ln", '"ln" mathfn');
+	defm("lg", '"lg" mathfn');
+	defm("log", '"log" mathfn');
+	defm("lb", '"lb" mathfn');
+	defm("lim", '"lim" mathfn');
+	defm("sup", '"sup" mathfn');
+	defm("inf", '"inf" mathfn');
+	defm("erf", '"erf" mathfn');
+	defm("erfc", '"erfc" mathfn');
 	defm("x '", 'x ^ prime');
-	defm("x bra", 'langle left x right |')
-	defm("x ket", '| left x right rangle')
+	defm("x bra", 'langle left x right |');
+	defm("x ket", '| left x right rangle');
+	defm("-*", '{minus nospace kern "-0.1" ast nospace} leftspace operatorspace')
 }
