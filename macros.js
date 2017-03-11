@@ -46,11 +46,14 @@ var BRBM = function(s){
 var OBM = function(s){
 	return function(){return new OpBox(s)}
 }
+var XCBM = function(s){
+	return function(){return new BCBox(s, 'xc', 'aschar')}
+}
 var BIGOPBM = function(s, scale, ascender, descender){
-	return function(){return new BigOpBox( new CBox(s), OPERATOR_SCALE, ASCENDER_OPERATOR, DESCENDER_OPERATOR, OPERATOR_SHIFT)}
+	return function(){return new BigOpBox( new OpBox(s, 'bop', 'nobreak'), OPERATOR_SCALE, ASCENDER_OPERATOR, DESCENDER_OPERATOR, OPERATOR_SHIFT)}
 }
 var INTEGRALBM = function(s, scale, ascender, descender){
-	return function(){return new BigOpBox( new CBox(s), INTEGRATE_SCALE, ASCENDER_INTEGRATE, DESCENDER_INTEGRATE, INTEGRATE_SHIFT)}
+	return function(){return new BigOpBox( new OpBox(s, 'bop', 'nobreak'), INTEGRATE_SCALE, ASCENDER_INTEGRATE, DESCENDER_INTEGRATE, INTEGRATE_SHIFT)}
 }
 var VBM = function(s){
 	return function(){return new VarBox(s)}
@@ -65,7 +68,9 @@ macros.over = function(left, right){
 	return new FracBox(left, right)
 }
 macros.tover = function(left, right){
-	return new RaiseBox(parameters.FRAC_MIDDLE, new ScaleBox(parameters.SS_SIZE, new RaiseBox(-parameters.FRAC_MIDDLE, new FracBox(left, right), true)), true)
+	return new RaiseBox(parameters.FRAC_MIDDLE - parameters.FRAC_PADDING_DEN * parameters.SS_SIZE, 
+		new ScaleBox(parameters.SS_SIZE, 
+			new RaiseBox(-parameters.FRAC_MIDDLE + parameters.FRAC_PADDING_DEN, new FracBox(left, right), true)), true)
 }
 macros.above = function(upper, lower){
 	var upperParts = [upper], lowerParts = [lower]
@@ -235,13 +240,22 @@ macros.red = function(content){
 macros.blue = function(content){
 	return new DecoBox(content, 'color:blue')
 };
+macros.green = function(content){
+	return new DecoBox(content, 'color:green')
+};
+macros.nospace = function(content){ return new DecoBox(content, {nospace: true}) }
+macros.leftspace = function(content){ return new DecoBox(content, {spaceBefore: true}) }
+macros.rightspace = function(content){ return new DecoBox(content, {spaceAfter: true}) }
+macros.operatorspace = function(content){ return new DecoBox(content, {spaceBefore: true, spaceAfter: true}) }
+macros.forceleftspace = function(content){ return new DecoBox(content, {forceSpaceBefore: true}) }
+macros.forcerightspace = function(content){ return new DecoBox(content, {forceSpaceAfter: true}) }
 
-(function(){
+void (function(){
 
 	var open = function(c){ return function(x){ return this.left(new BracketBox(c), x) }};
 	var close = function(c){ return function(x){ return this.right(x, new BracketBox(c)) }};
 	var sym = CBM;
-	var mathchar = CBM;
+	var mathchar = XCBM;
 	var bracketchar = BRBM;
 	var op = OBM;
 	var bigop = BIGOPBM;
@@ -508,7 +522,7 @@ macros.blue = function(content){
 	macros.prod = bigop("\u220F");
 	macros.coprod = bigop("\u2210");
 	macros.sum = bigop("\u2211");
-	macros.int = intop("\u222B");
+	macros['int'] = intop("\u222B");
 	macros.iint = intop("\u222C");
 	macros.iiint = intop("\u222D");
 	macros.oint = intop("\u222E");
@@ -575,7 +589,7 @@ macros.blue = function(content){
 	macros.fracslash = op("\u2044");
 	macros.upand = op("\u214B");
 	macros.minus = op("\u2212");
-	macros.minusx = mathchar("\u2212");
+	macros.minusx = sym("\u2212");
 	macros.mp = op("\u2213");
 	macros.dotplus = op("\u2214");
 	macros.divslash = op("\u2215");
@@ -2398,6 +2412,7 @@ macros.blue = function(content){
 	macros.mbfitsansvarphi = mathchar("&#x1D7C7;");
 	macros.mbfitsansvarrho = mathchar("&#x1D7C8;");
 	macros.mbfitsansvarpi = mathchar("&#x1D7C9;");
+	
 	macros.matheth = mathchar("\u00F0");
 	macros.BbbC = mathchar("\u2102");
 	macros.mscrg = mathchar("\u210A");

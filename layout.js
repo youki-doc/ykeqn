@@ -7,7 +7,8 @@ var STACK_MIDDLE = parameters.STACK_MIDDLE
 var FRAC_MIDDLE = parameters.FRAC_MIDDLE
 var OPERATOR_ASC = parameters.OPERATOR_ASC
 var OPERATOR_DESC = parameters.OPERATOR_DESC
-var FRAC_PADDING = parameters.FRAC_PADDING
+var FRAC_PADDING_NUM = parameters.FRAC_PADDING_NUM
+var FRAC_PADDING_DEN = parameters.FRAC_PADDING_DEN
 var SS_SIZE = parameters.SS_SIZE
 var SUP_BOTTOM = parameters.SUP_BOTTOM
 var SUB_TOP = parameters.SUB_TOP
@@ -24,9 +25,10 @@ var BRACKET_DESC = parameters.BRACKET_DESC
 var BRACKET_GEARS = parameters.BRACKET_GEARS
 
 var MATH_SPACE = '<sp>\u2005</sp>'
+var FORCE_SPACE = '<sf>\u2005</sf>'
 var MATRIX_SPACE = '\u2000'
 
-function em(x){	return (Math.round(x * 100) / 100).toFixed(2).replace(/\.?0+$/, '') + 'em' }
+function em(x){	return (Math.round(x * 100) / 100).toFixed(3).replace(/\.?0+$/, '') + 'em' }
 function arr1(box, rise, height, depth){
 	return arrx([box], [rise], height, depth)
 }
@@ -46,8 +48,10 @@ var EMDIST = em;
 var Box = function(){
 	this.height = 0;
 	this.depth = 0;
-}
-Box.prototype.write = function(){return ''}
+};
+Box.prototype.write = function(){return ''};
+Box.prototype.spaceBefore = 0;
+Box.prototype.spaceAfter = 0;
 
 var CBox = function(c){
 	this.height = CHAR_ASC
@@ -95,18 +99,24 @@ BfBox.prototype = new CBox;
 BfBox.prototype.write = function(){
 	return '<b>' + this.c + '</b>'
 }
-var OpBox = function(c){
+var OpBox = function(c, tag, nobreak){
 	this.height = CHAR_ASC
 	this.depth = CHAR_DESC
 	this.c = c
+	this.tag = tag
+	if(nobreak){
+		this.breakBefore = this.breakAfter = false;
+		this.spaceBefore = this.spaceAfter = 0;
+	}
 }
 OpBox.prototype = new CBox;
 OpBox.prototype.breakBefore = true;
 OpBox.prototype.breakAfter  = true;
-OpBox.prototype.spaceBefore = true;
-OpBox.prototype.spaceAfter  = true;
+OpBox.prototype.spaceBefore = 10;
+OpBox.prototype.spaceAfter  = 10;
 OpBox.prototype.write = function(adjLeft, adjRight){
-	return '<op>' + this.c + '</op>'
+	var tag = this.tag || 'op'
+	return '<' + tag + '>' + this.c + '</' + tag + '>'
 }
 var SpBox = function(c){
 	this.height = CHAR_ASC
@@ -119,16 +129,22 @@ SpBox.prototype.breakAfter  = true;
 SpBox.prototype.write = function(){
 	return '<sp>' + this.c + '</sp>'
 }
-var BCBox = function(c){
+var BCBox = function(c, tag, nobreak){
 	this.height = CHAR_ASC
 	this.depth = CHAR_DESC
 	this.c = c
+	this.tag = tag;
+	if(nobreak){
+		this.breakBefore = this.breakAfter = false;
+		this.spaceBefore = this.spaceAfter = 0;
+	}
 }
 BCBox.prototype = new CBox;
 BCBox.prototype.breakAfter  = true;
 BCBox.prototype.spaceAfter  = true;
 BCBox.prototype.write = function(adjLeft, adjRight){
-	return '<op>' + this.c + '</op>'
+	var tag = this.tag || 'op'
+	return '<' + tag + '>' + this.c + '</' + tag + '>'
 }
 var BracketBox = function(c){
 	this.height = BRACKET_ASC
@@ -164,6 +180,8 @@ var KernBox = function(kern, b){
 	this.kern = kern;
 	this.height = b.height;
 	this.depth = b.depth;
+	this.spaceBefore = b.spaceBefore;
+	this.forceSpaceBefore = b.forceSpaceBefore;
 }
 KernBox.prototype = new Box;
 KernBox.prototype.write = function(adjLeft, adjRight){
@@ -181,17 +199,16 @@ FracLineBox.prototype.write = function(){
 function FracBox(num, den){
 	this.num = num;
 	this.den = den;
-	this.height = this.num.height + this.num.depth + FRAC_MIDDLE + FRAC_PADDING;
-	this.depth = this.den.height + this.den.depth - FRAC_MIDDLE + FRAC_PADDING;
+	this.height = this.num.height + this.num.depth + FRAC_MIDDLE + FRAC_PADDING_NUM;
+	this.depth = this.den.height + this.den.depth - FRAC_MIDDLE + FRAC_PADDING_DEN;
 }
 FracBox.prototype = new Box;
 FracBox.prototype.write = function(){
 	return arrx(
 		[this.num, new FracLineBox(), this.den], 
-		[
-			this.height - this.num.height, 
-			this.height - this.num.height - this.num.depth - FRAC_PADDING, 
-			this.height - this.num.height - this.num.depth - this.den.height - 2 * FRAC_PADDING], 
+		[	this.height - this.num.height, 
+			this.height - this.num.height - this.num.depth - FRAC_PADDING_NUM, 
+			this.height - this.num.height - this.num.depth - this.den.height - FRAC_PADDING_NUM - FRAC_PADDING_DEN], 
 		this.height, this.depth, 'frac')
 }
 
@@ -263,7 +280,7 @@ MatrixBox.prototype.write = function(){
 function hJoin(parts, f){
 	var buf = '';
 	for(var i = 0; i < parts.length; i++) {
-		buf += (i > 0 && (parts[i].spaceBefore || parts[i - 1].spaceAfter) ? MATH_SPACE : '') 
+		buf += (i > 0 && ((parts[i].spaceBefore - 0) + (parts[i - 1].spaceAfter - 0) > 0) ? (parts[i].forceSpaceBefore || parts[i - 1].forceSpaceAfter ? FORCE_SPACE : MATH_SPACE) : '') 
 			+ f(parts[i]);
 	}
 	return buf;
@@ -288,7 +305,9 @@ var HBox = function(xs, spaceQ){
 	this.boxes = bx
 	this.spaceQ = spaceQ
 	this.spaceBefore = this.boxes[0].spaceBefore;
+	this.forceSpaceBefore = this.boxes[0].forceSpaceBefore;
 	this.spaceAfter = this.boxes[this.boxes.length - 1].spaceAfter;
+	this.forceSpaceAfter = this.boxes[this.boxes.length - 1].forceSpaceAfter;
 }
 HBox.prototype = new Box
 HBox.prototype.write = function(adjLeft, adjRight){
@@ -309,7 +328,9 @@ var BBox = function(left, content, right){
 	this.depth = content.depth
 	this.left = left instanceof Box ? left : new CBox(left)
 	this.right = right instanceof Box ? right : new CBox(right)
-	this.content = content
+	this.content = content;
+	this.spaceBefore = -1;
+	this.spaceAfter = -1;
 }
 
 var scale_span = function(v, t, k, aux){
@@ -349,12 +370,12 @@ BBox.prototype.write = function(){
 
 function SqrtInternalBox(content){
 	this.content = content
-	this.height = content.height + FRAC_PADDING * 2
+	this.height = content.height + FRAC_PADDING_DEN * 2
 	this.depth = content.depth
 }
 SqrtInternalBox.prototype = new Box;
 SqrtInternalBox.prototype.write = function(){
-	return '<sqrt style="margin-top:' + em(FRAC_PADDING) + '"><sk style="padding: ' + EMDIST(FRAC_PADDING) + ' 0 0">' + this.content.write() + '</sk></sqrt>'
+	return '<sqrt style="margin-top:' + em(FRAC_PADDING_DEN) + '"><sk style="padding: ' + EMDIST(FRAC_PADDING_DEN) + ' 0 0">' + this.content.write() + '</sk></sqrt>'
 }
 
 var SqrtBox = function(content){
@@ -371,10 +392,20 @@ var DecoBox = function(content, deco){
 	this.depth = content.depth
 	this.content = content
 	this.deco = deco
+	this.spaceBefore = content.spaceBefore
+	this.spaceAfter = content.spaceAfter
+	this.forceSpaceBefore = content.forceSpaceBefore
+	this.forceSpaceAfter = content.forceSpaceAfter
+	if(deco.nospace) { this.spaceBefore = this.spaceAfter = 0 };
+	if(deco.spaceBefore) { this.spaceBefore = 1 };
+	if(deco.spaceAfter) { this.spaceAfter = 1 };
+	if(deco.forceSpaceBefore) { this.forceSpaceBefore = this.spaceBefore = true };
+	if(deco.forceSpaceAfter) { this.forceSpaceAfter = this.spaceAfter = true };
 }
 DecoBox.prototype = new Box;
 DecoBox.prototype.write = function(adjLeft, adjRight){
-	return '<e style="' + this.deco + '">' + this.content.write(adjLeft, adjRight) + '</e>'
+	if(typeof this.deco === 'string') return '<e style="' + this.deco + '">' + this.content.write(adjLeft, adjRight) + '</e>';
+	else return this.content.write(adjLeft, adjRight)
 }
 
 var SSBox = function(base, sup, sub){
@@ -398,6 +429,7 @@ var SSBox = function(base, sup, sub){
 		this.depth = base.depth;
 	}
 	this.spaceBefore = base.spaceBefore;
+	this.forceSpaceBefore = base.forceSpaceBefore;
 	this.breakBefore = base.breakBefore;
 }
 SSBox.prototype = new Box;
