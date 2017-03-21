@@ -1,4 +1,4 @@
-exports.defms = function(defm){
+exports.defms = function (defm) {
 	defm('upper choose lower', '(upper above lower)');
 	defm('f mathfn', 'f rm forcerightspace');
 	defm("sin", '"sin" mathfn');
@@ -16,7 +16,6 @@ exports.defms = function(defm){
 	defm("inf", '"inf" mathfn');
 	defm("erf", '"erf" mathfn');
 	defm("erfc", '"erfc" mathfn');
-	defm("x '", 'x ^ prime');
 	defm("x bra", 'langle left x right |');
 	defm("x ket", '| left x right rangle');
 	defm("-*", '{minus nospace kern "-0.1" ast nospace} leftspace operatorspace')
