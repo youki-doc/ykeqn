@@ -28,14 +28,14 @@ var MATH_SPACE = '<sp>\u2005</sp>'
 var FORCE_SPACE = '<sf>\u2005</sf>'
 var MATRIX_SPACE = '\u2000'
 
-function em(x){	return (Math.round(x * 100) / 100).toFixed(3).replace(/\.?0+$/, '') + 'em' }
-function arr1(box, rise, height, depth){
+function em(x) { return (Math.round(x * 100) / 100).toFixed(3).replace(/\.?0+$/, '') + 'em' }
+function arr1(box, rise, height, depth) {
 	return arrx([box], [rise], height, depth)
 }
-function arrx(boxes, rises, height, depth, cl, scales){
+function arrx(boxes, rises, height, depth, cl, scales) {
 	var buf = '<r style="height:' + em(height + depth) + ';vertical-align:' + em(height - CHAR_ASC) + '"' + (cl ? ' class="' + cl + '"' : '') + '><eb>{</eb>';
-	for(var j = 0; j < boxes.length; j++) if(boxes[j]) {
-		if(scales) var scale = scales[j];
+	for (var j = 0; j < boxes.length; j++) if (boxes[j]) {
+		if (scales) var scale = scales[j];
 		else var scale = 1;
 		buf += '<ri style="top:' + em((height - rises[j]) / scale - boxes[j].height) + (scale && scale !== 1 ? ';font-size:' + em(scale) : '') + '">' + boxes[j].write() + '</ri>'
 	}
@@ -45,137 +45,137 @@ function arrx(boxes, rises, height, depth, cl, scales){
 var EMDIST = em;
 
 
-var Box = function(){
+var Box = function () {
 	this.height = 0;
 	this.depth = 0;
 };
-Box.prototype.write = function(){return ''};
+Box.prototype.write = function () { return '' };
 Box.prototype.spaceBefore = 0;
 Box.prototype.spaceAfter = 0;
 
-var CBox = function(c){
+var CBox = function (c) {
 	this.height = CHAR_ASC
 	this.depth = CHAR_DESC
 	this.c = c
 }
 CBox.prototype = new Box;
-CBox.prototype.write = function(){
+CBox.prototype.write = function () {
 	return this.c
 }
 
-var VarBox = function(c){
+var VarBox = function (c) {
 	this.height = CHAR_ASC
 	this.depth = CHAR_DESC
 	this.c = c
 }
 VarBox.prototype = new CBox;
-VarBox.prototype.write = function(){
+VarBox.prototype.write = function () {
 	return '<var>' + this.c + '</var>'
 }
-var NumberBox = function(c){
+var NumberBox = function (c) {
 	this.height = CHAR_ASC
 	this.depth = CHAR_DESC
 	this.c = c
 }
 NumberBox.prototype = new CBox;
-NumberBox.prototype.write = function(){
+NumberBox.prototype.write = function () {
 	return '<var class="nm">' + this.c + '</var>'
 }
-var CodeBox = function(c){
+var CodeBox = function (c) {
 	this.height = CHAR_ASC
 	this.depth = CHAR_DESC
 	this.c = c
 }
 CodeBox.prototype = new CBox;
-CodeBox.prototype.write = function(){
+CodeBox.prototype.write = function () {
 	return '<code>' + this.c + '</code>'
 }
-var BfBox = function(c){
+var BfBox = function (c) {
 	this.height = CHAR_ASC
 	this.depth = CHAR_DESC
 	this.c = c
 }
 BfBox.prototype = new CBox;
-BfBox.prototype.write = function(){
+BfBox.prototype.write = function () {
 	return '<b>' + this.c + '</b>'
 }
-var OpBox = function(c, tag, nobreak){
+var OpBox = function (c, tag, nobreak) {
 	this.height = CHAR_ASC
 	this.depth = CHAR_DESC
 	this.c = c
 	this.tag = tag
-	if(nobreak){
+	if (nobreak) {
 		this.breakBefore = this.breakAfter = false;
 		this.spaceBefore = this.spaceAfter = 0;
 	}
 }
 OpBox.prototype = new CBox;
 OpBox.prototype.breakBefore = true;
-OpBox.prototype.breakAfter  = true;
+OpBox.prototype.breakAfter = true;
 OpBox.prototype.spaceBefore = 10;
-OpBox.prototype.spaceAfter  = 10;
-OpBox.prototype.write = function(adjLeft, adjRight){
+OpBox.prototype.spaceAfter = 10;
+OpBox.prototype.write = function (adjLeft, adjRight) {
 	var tag = this.tag || 'op'
 	return '<' + tag + '>' + this.c + '</' + tag + '>'
 }
-var SpBox = function(c){
+var SpBox = function (c) {
 	this.height = CHAR_ASC
 	this.depth = CHAR_DESC
 	this.c = c
 }
 SpBox.prototype = new CBox;
 SpBox.prototype.breakBefore = true;
-SpBox.prototype.breakAfter  = true;
-SpBox.prototype.write = function(){
+SpBox.prototype.breakAfter = true;
+SpBox.prototype.write = function () {
 	return '<sp>' + this.c + '</sp>'
 }
-var BCBox = function(c, tag, nobreak){
+var BCBox = function (c, tag, nobreak) {
 	this.height = CHAR_ASC
 	this.depth = CHAR_DESC
 	this.c = c
 	this.tag = tag;
-	if(nobreak){
+	if (nobreak) {
 		this.breakBefore = this.breakAfter = false;
 		this.spaceBefore = this.spaceAfter = 0;
 	}
 }
 BCBox.prototype = new CBox;
-BCBox.prototype.breakAfter  = true;
-BCBox.prototype.spaceAfter  = true;
-BCBox.prototype.write = function(adjLeft, adjRight){
+BCBox.prototype.breakAfter = true;
+BCBox.prototype.spaceAfter = true;
+BCBox.prototype.write = function (adjLeft, adjRight) {
 	var tag = this.tag || 'op'
 	return '<' + tag + '>' + this.c + '</' + tag + '>'
 }
-var BracketBox = function(c){
+var BracketBox = function (c) {
 	this.height = BRACKET_ASC
 	this.depth = BRACKET_DESC
 	this.c = c
 }
 BracketBox.prototype = new CBox;
-BracketBox.prototype.write = function(adjLeft, adjRight){
+BracketBox.prototype.write = function (adjLeft, adjRight) {
 	return this.c
 }
-var ScaleBox = function(scale, b){
+var ScaleBox = function (scale, b) {
 	this.content = b;
 	this.scale = scale;
 	this.height = b.height * scale;
 	this.depth = b.depth * scale;
 }
 ScaleBox.prototype = new Box;
-ScaleBox.prototype.write = function(){
+ScaleBox.prototype.write = function () {
 	return '<r style="height:' + EMDIST(this.height + this.depth) + '"><ri style="font-size:' + em(this.scale) + '">' + this.content.write() + '</ri></r>'
 }
-var RaiseBox = function(raise, b, recalculateMetrics){
+var RaiseBox = function (raise, b, recalculateMetrics) {
 	this.content = b;
 	this.raise = raise;
 	this.height = recalculateMetrics ? Math.max(0, b.height + raise) : b.height;
 	this.depth = recalculateMetrics ? Math.max(0, b.depth - raise) : b.depth;
 }
 RaiseBox.prototype = new Box;
-RaiseBox.prototype.write = function(){
+RaiseBox.prototype.write = function () {
 	return arrx([this.content], [this.raise], this.height, this.depth)
 }
-var KernBox = function(kern, b){
+var KernBox = function (kern, b) {
 	this.content = b;
 	this.kern = kern;
 	this.height = b.height;
@@ -184,56 +184,56 @@ var KernBox = function(kern, b){
 	this.forceSpaceBefore = b.forceSpaceBefore;
 }
 KernBox.prototype = new Box;
-KernBox.prototype.write = function(adjLeft, adjRight){
+KernBox.prototype.write = function (adjLeft, adjRight) {
 	return '<r style="margin-right:' + em(this.kern) + '">' + this.content.write(adjLeft, false) + '</r>'
 }
 
-function FracLineBox(){
+function FracLineBox() {
 	this.height = 0;
 	this.depth = 0;
 }
 FracLineBox.prototype = new Box;
-FracLineBox.prototype.write = function(){
+FracLineBox.prototype.write = function () {
 	return '<fl>/</fl>'
 }
-function FracBox(num, den){
+function FracBox(num, den) {
 	this.num = num;
 	this.den = den;
 	this.height = this.num.height + this.num.depth + FRAC_MIDDLE + FRAC_PADDING_NUM;
 	this.depth = this.den.height + this.den.depth - FRAC_MIDDLE + FRAC_PADDING_DEN;
 }
 FracBox.prototype = new Box;
-FracBox.prototype.write = function(){
+FracBox.prototype.write = function () {
 	return arrx(
-		[this.num, new FracLineBox(), this.den], 
-		[	this.height - this.num.height, 
-			this.height - this.num.height - this.num.depth - FRAC_PADDING_NUM, 
-			this.height - this.num.height - this.num.depth - this.den.height - FRAC_PADDING_NUM - FRAC_PADDING_DEN], 
+		[this.num, new FracLineBox(), this.den],
+		[this.height - this.num.height,
+		this.height - this.num.height - this.num.depth - FRAC_PADDING_NUM,
+		this.height - this.num.height - this.num.depth - this.den.height - FRAC_PADDING_NUM - FRAC_PADDING_DEN],
 		this.height, this.depth, 'frac')
 }
 
-function StackBox(boxes){
-	boxes = boxes.filter(function(x){ return !!x })
+function StackBox(boxes) {
+	boxes = boxes.filter(function (x) { return !!x })
 	var v = 0;
 	this.parts = boxes;
-	for(var j = 0; j < boxes.length; j++){
+	for (var j = 0; j < boxes.length; j++) {
 		v += boxes[j].height + boxes[j].depth
 	}
 	this.height = v / 2 + STACK_MIDDLE
 	this.depth = v / 2 - STACK_MIDDLE
 }
 StackBox.prototype = new Box;
-StackBox.prototype.write = function(){
+StackBox.prototype.write = function () {
 	var rises = [];
 	var v = 0;
-	for(var j = 0; j < this.parts.length; j++){
+	for (var j = 0; j < this.parts.length; j++) {
 		rises[j] = this.height - (v + this.parts[j].height);
 		v += this.parts[j].height + this.parts[j].depth
 	};
 	return arrx(this.parts, rises, this.height, this.depth);
 }
 
-function MatrixBox(boxes, alignments){
+function MatrixBox(boxes, alignments) {
 	this.boxes = boxes;
 	this.rows = boxes.length;
 	this.columns = 0;
@@ -241,12 +241,12 @@ function MatrixBox(boxes, alignments){
 	var rowHeights = [];
 	var rowDepthes = [];
 	var v = 0;
-	for(var j = 0; j < boxes.length; j++){
+	for (var j = 0; j < boxes.length; j++) {
 		var rh = 0;
 		var rd = 0;
-		for(var k = 0; k < boxes[j].length; k++) if(boxes[j][k]){
-			if(boxes[j][k].height > rh) rh = boxes[j][k].height;
-			if(boxes[j][k].depth > rd) rd = boxes[j][k].depth;
+		for (var k = 0; k < boxes[j].length; k++) if (boxes[j][k]) {
+			if (boxes[j][k].height > rh) rh = boxes[j][k].height;
+			if (boxes[j][k].depth > rd) rd = boxes[j][k].depth;
 		};
 		rowHeights[j] = rh;
 		rowDepthes[j] = rd;
@@ -259,17 +259,17 @@ function MatrixBox(boxes, alignments){
 	this.depth = v / 2 - STACK_MIDDLE;
 }
 MatrixBox.prototype = new Box;
-MatrixBox.prototype.write = function(){
+MatrixBox.prototype.write = function () {
 	var rises = [];
 	var v = 0;
-	for(var j = 0; j < this.rows; j++) {
+	for (var j = 0; j < this.rows; j++) {
 		rises[j] = this.height - (v + this.rowHeights[j]);
 		v += this.rowHeights[j] + this.rowDepthes[j]
 	}
 	var buf = [];
-	for(var k = 0; k < this.columns; k++){
+	for (var k = 0; k < this.columns; k++) {
 		var column = [];
-		for(var j = 0; j < this.rows; j++) {
+		for (var j = 0; j < this.rows; j++) {
 			column[j] = this.boxes[j][k];
 		}
 		buf[k] = arrx(column, rises, this.height, this.depth, 'mc' + (this.alignments[k] || '').trim())
@@ -277,27 +277,27 @@ MatrixBox.prototype.write = function(){
 	return buf.join(MATRIX_SPACE);
 }
 
-function hJoin(parts, f){
+function hJoin(parts, f) {
 	var buf = '';
-	for(var i = 0; i < parts.length; i++) {
-		buf += (i > 0 && ((parts[i].spaceBefore - 0) + (parts[i - 1].spaceAfter - 0) > 0) ? (parts[i].forceSpaceBefore || parts[i - 1].forceSpaceAfter ? FORCE_SPACE : MATH_SPACE) : '') 
+	for (var i = 0; i < parts.length; i++) {
+		buf += (i > 0 && ((parts[i].spaceBefore - 0) + (parts[i - 1].spaceAfter - 0) > 0) ? (parts[i].forceSpaceBefore || parts[i - 1].forceSpaceAfter ? FORCE_SPACE : MATH_SPACE) : '')
 			+ f(parts[i]);
 	}
 	return buf;
 }
-function STD_WRITE(box){
+function STD_WRITE(box) {
 	return box.write();
 }
 
-var HBox = function(xs, spaceQ){
-	if(!xs.length) xs = Array.prototype.slice.call(arguments, 0);
+var HBox = function (xs, spaceQ) {
+	if (!xs.length) xs = Array.prototype.slice.call(arguments, 0);
 	var h = 0
 	var d = 0
 	var bx = []
-	for(var i = 0; i < xs.length; i++){
+	for (var i = 0; i < xs.length; i++) {
 		bx.push(xs[i])
-		if(h < xs[i].height) h = xs[i].height
-		if(d < xs[i].depth)  d = xs[i].depth
+		if (h < xs[i].height) h = xs[i].height
+		if (d < xs[i].depth) d = xs[i].depth
 	}
 
 	this.height = h
@@ -310,20 +310,20 @@ var HBox = function(xs, spaceQ){
 	this.forceSpaceAfter = this.boxes[this.boxes.length - 1].forceSpaceAfter;
 }
 HBox.prototype = new Box
-HBox.prototype.write = function(adjLeft, adjRight){
+HBox.prototype.write = function (adjLeft, adjRight) {
 	return hJoin(this.boxes, STD_WRITE)
 }
 
-var SegmentBox = function(xs){
+var SegmentBox = function (xs) {
 	HBox.call(this, xs);
 }
 SegmentBox.prototype = Object.create(HBox.prototype);
-SegmentBox.prototype.write = function(adjLeft, adjRight){
+SegmentBox.prototype.write = function (adjLeft, adjRight) {
 	var buf = hJoin(this.boxes, STD_WRITE);
 	return buf;
 }
 
-var BBox = function(left, content, right){
+var BBox = function (left, content, right) {
 	this.height = content.height
 	this.depth = content.depth
 	this.left = left instanceof Box ? left : new CBox(left)
@@ -333,61 +333,60 @@ var BBox = function(left, content, right){
 	this.spaceAfter = -1;
 }
 
-var scale_span = function(v, t, k, aux){
-	return '<e class="' + (k || 'bb') + '" style="transform:scaley('+ v + ');'
-			+ '-webkit-transform:scaley('+ v + ');'
-			+ '-moz-transform:scaley('+ v + ');'
-			+ '-ms-transform:scaley('+ v + ');'
-			+ '-o-transform:scaley('+ v + ');'
-			+ (aux || '') + '">' + t + "</e>"
+var scale_span = function (v, t, k, aux) {
+	return '<e class="' + (k || 'bb') + '" style="transform:scaley(' + v + ');'
+		+ '-webkit-transform:scaley(' + v + ');'
+		+ '-moz-transform:scaley(' + v + ');'
+		+ '-ms-transform:scaley(' + v + ');'
+		+ '-o-transform:scaley(' + v + ');'
+		+ (aux || '') + '">' + t + "</e>"
 }
 BBox.prototype = new Box;
-BBox.prototype.write = function(){
+BBox.prototype.write = function () {
 	var halfwayHeight = (this.left.height - this.left.depth) / 2;
 	var halfBracketHeight = halfwayHeight + this.left.depth;
 	var contentUpperHeight = this.content.height - halfwayHeight;
 	var contentLowerDepth = this.content.depth + halfwayHeight;
 
-	var SCALE_V = 1 / BRACKET_GEARS * Math.ceil(BRACKET_GEARS * Math.max(1, 
-		contentUpperHeight / halfBracketHeight, 
+	var SCALE_V = 1 / BRACKET_GEARS * Math.ceil(BRACKET_GEARS * Math.max(1,
+		contentUpperHeight / halfBracketHeight,
 		contentLowerDepth / halfBracketHeight));
 	var scaleClass = '';
-	if(SCALE_V >= 1.5) scaleClass = ' big'
-	if(SCALE_V >= 4) scaleClass = ' bigg'
-	if(SCALE_V <= 1.1) {
+	if (SCALE_V >= 1.5) scaleClass = ' big'
+	if (SCALE_V >= 4) scaleClass = ' bigg'
+	if (SCALE_V <= 1.1) {
 		SCALE_V = 1;
 		return '<e class="bn l">' + this.left.write() + '</e>' + (this.content.write()).replace(/[\s\u2009\u205f]+((?:<\/i>)+)$/, '$1') + '<e class="bn r">' + this.right.write() + '</e>';
 	} else {
-		var SCALE_H = 1 + Math.pow(SCALE_V - 1, 0.4) * 0.5;
-		//var SCALE_H = SCALE_V;
+		var SCALE_H = 1 + Math.pow(SCALE_V - 1, 0.3) * 0.375;
 		var baselineAdjustment = - (halfwayHeight * SCALE_H - halfwayHeight) / SCALE_H;
 		var auxStyle = 'font-size:' + em(SCALE_H) + ';vertical-align:' + EMDIST(baselineAdjustment + BRACKET_SHIFT * SCALE_V + BRACKET_SHIFT_2);
 		return (this.left.c ? scale_span(SCALE_V / SCALE_H, this.left.write(), 'bb l' + scaleClass, auxStyle) : '')
-		       + (this.content.write()).replace(/[\s\u2005\u2009\u205f]+((?:<\/i>)+)$/, '$1')
-		       + (this.right.c ? scale_span(SCALE_V / SCALE_H, this.right.write(), 'bb r' + scaleClass, auxStyle) : '')
+			+ (this.content.write()).replace(/[\s\u2005\u2009\u205f]+((?:<\/i>)+)$/, '$1')
+			+ (this.right.c ? scale_span(SCALE_V / SCALE_H, this.right.write(), 'bb r' + scaleClass, auxStyle) : '')
 	}
 }
 
-function SqrtInternalBox(content){
+function SqrtInternalBox(content) {
 	this.content = content
 	this.height = content.height + FRAC_PADDING_DEN * 2
 	this.depth = content.depth
 }
 SqrtInternalBox.prototype = new Box;
-SqrtInternalBox.prototype.write = function(){
+SqrtInternalBox.prototype.write = function () {
 	return '<sqrt style="margin-top:' + em(FRAC_PADDING_DEN) + '"><sk style="padding: ' + EMDIST(FRAC_PADDING_DEN) + ' 0 0">' + this.content.write() + '</sk></sqrt>'
 }
 
-var SqrtBox = function(content){
+var SqrtBox = function (content) {
 	SqrtInternalBox.call(this, content)
 }
 SqrtBox.prototype = new Box;
-SqrtBox.prototype.write = function(){
+SqrtBox.prototype.write = function () {
 	return arrx([new SqrtInternalBox(this.content)], [0], this.height, this.depth)
 }
 
 
-var DecoBox = function(content, deco){
+var DecoBox = function (content, deco) {
 	this.height = content.height
 	this.depth = content.depth
 	this.content = content
@@ -396,33 +395,33 @@ var DecoBox = function(content, deco){
 	this.spaceAfter = content.spaceAfter
 	this.forceSpaceBefore = content.forceSpaceBefore
 	this.forceSpaceAfter = content.forceSpaceAfter
-	if(deco.nospace) { this.spaceBefore = this.spaceAfter = 0 };
-	if(deco.spaceBefore) { this.spaceBefore = 1 };
-	if(deco.spaceAfter) { this.spaceAfter = 1 };
-	if(deco.forceSpaceBefore) { this.forceSpaceBefore = this.spaceBefore = true };
-	if(deco.forceSpaceAfter) { this.forceSpaceAfter = this.spaceAfter = true };
+	if (deco.nospace) { this.spaceBefore = this.spaceAfter = 0 };
+	if (deco.spaceBefore) { this.spaceBefore = 1 };
+	if (deco.spaceAfter) { this.spaceAfter = 1 };
+	if (deco.forceSpaceBefore) { this.forceSpaceBefore = this.spaceBefore = true };
+	if (deco.forceSpaceAfter) { this.forceSpaceAfter = this.spaceAfter = true };
 }
 DecoBox.prototype = new Box;
-DecoBox.prototype.write = function(adjLeft, adjRight){
-	if(typeof this.deco === 'string') return '<e style="' + this.deco + '">' + this.content.write(adjLeft, adjRight) + '</e>';
+DecoBox.prototype.write = function (adjLeft, adjRight) {
+	if (typeof this.deco === 'string') return '<e style="' + this.deco + '">' + this.content.write(adjLeft, adjRight) + '</e>';
 	else return this.content.write(adjLeft, adjRight)
 }
 
-var SSBox = function(base, sup, sub){
+var SSBox = function (base, sup, sub) {
 	this.sup = sup
 	this.sub = sub
 	this.base = base;
-	if(sup){
+	if (sup) {
 		this.height = this.base.height + SUP_BOTTOM + SS_SIZE * (sup.depth + sup.height);
-		if(this.height - base.height <= SUP_TOP_TOLERENCE) {
+		if (this.height - base.height <= SUP_TOP_TOLERENCE) {
 			this.height = base.height
 		}
 	} else {
 		this.height = base.height;
 	};
-	if(sub){
+	if (sub) {
 		this.depth = this.base.depth - SUB_TOP + SS_SIZE * (sub.height + sub.depth);
-		if(this.depth - base.depth <= SUB_BOTTOM_TOLERENCE) {
+		if (this.depth - base.depth <= SUB_BOTTOM_TOLERENCE) {
 			this.depth = base.depth
 		}
 	} else {
@@ -433,17 +432,17 @@ var SSBox = function(base, sup, sub){
 	this.breakBefore = base.breakBefore;
 }
 SSBox.prototype = new Box;
-SSBox.prototype.write = function(adjLeft, adjRight){
+SSBox.prototype.write = function (adjLeft, adjRight) {
 	var sup = this.sup;
 	var sub = this.sub;
-	return this.base.write(adjLeft, false) 
-	       + arrx([sup, sub], [
-	       	sup ? this.base.height + SUP_BOTTOM + sup.depth * SS_SIZE : 0,
-	       	sub ? -this.base.depth + SUB_TOP - sub.height * SS_SIZE : 0
-	       ], this.height, this.depth, 'ss', [SS_SIZE, SS_SIZE])
+	return this.base.write(adjLeft, false)
+		+ arrx([sup, sub], [
+			sup ? this.base.height + SUP_BOTTOM + sup.depth * SS_SIZE : 0,
+			sub ? -this.base.depth + SUB_TOP - sub.height * SS_SIZE : 0
+		], this.height, this.depth, 'ss', [SS_SIZE, SS_SIZE])
 }
 
-var SSStackBox = function(base, sup, sub){
+var SSStackBox = function (base, sup, sub) {
 	this.sup = sup ? new ScaleBox(SS_SIZE, sup) : null;
 	this.sub = sub ? new ScaleBox(SS_SIZE, sub) : null;
 	this.base = base;
@@ -451,7 +450,7 @@ var SSStackBox = function(base, sup, sub){
 	this.depth = base.depth + (sub ? (this.sub.height + this.sub.depth) : 0) + SSSTACK_MARGIN_SUB;
 }
 SSStackBox.prototype = new Box;
-SSStackBox.prototype.write = function(adjLeft, adjRight){
+SSStackBox.prototype.write = function (adjLeft, adjRight) {
 	var rises = [
 		this.sup ? this.height - this.sup.height : 0,
 		0,
@@ -460,49 +459,49 @@ SSStackBox.prototype.write = function(adjLeft, adjRight){
 	return arrx([this.sup, this.base, this.sub], rises, this.height, this.depth, 'sss')
 }
 
-var FSBox = function(scale, content){
+var FSBox = function (scale, content) {
 	this.scale = scale;
 	this.content = content;
 	this.height = content.height * scale
 	this.depth = content.depth * scale
 }
 FSBox.prototype = new Box;
-FSBox.prototype.write = function(){
+FSBox.prototype.write = function () {
 	return '<sc style="font-size:' + (this.scale * 100) + '%">' + this.content.write() + '</sc>'
 }
 
-var BigOpBox = function(content, scale, ascender, descender, shift){
+var BigOpBox = function (content, scale, ascender, descender, shift) {
 	this.scale = scale;
 	this.content = content;
-	if(arguments.length < 3) ascender = OPERATOR_ASC
-	if(arguments.length < 4) descender = OPERATOR_DESC
-	if(arguments.length < 5) shift = BIGOP_SHIFT
+	if (arguments.length < 3) ascender = OPERATOR_ASC
+	if (arguments.length < 4) descender = OPERATOR_DESC
+	if (arguments.length < 5) shift = BIGOP_SHIFT
 	this.height = (ascender + shift) * scale;
 	this.depth = (descender - shift) * scale;
 	this.shift = shift;
 }
 BigOpBox.prototype = new Box;
-BigOpBox.prototype.write = function(){
+BigOpBox.prototype.write = function () {
 	return arrx([new ScaleBox(this.scale, this.content)], [this.shift * this.scale], this.height, this.depth, 'bo')
 }
 
-var layout = function(box, config){
-	if(box instanceof HBox && !config.keepSpace){
+var layout = function (box, config) {
+	if (box instanceof HBox && !config.keepSpace) {
 		var buf = [];
 		var segment = [];
-		for(var i = 0; i < box.boxes.length; i++){
+		for (var i = 0; i < box.boxes.length; i++) {
 			var current = box.boxes[i];
-			if(current.breakBefore){
-				if(segment.length) buf.push(new SegmentBox(segment)); 
+			if (current.breakBefore) {
+				if (segment.length) buf.push(new SegmentBox(segment));
 				segment = []
 			}
 			segment.push(current)
-			if(current.breakAfter){
-				if(segment.length) buf.push(new SegmentBox(segment)); 
+			if (current.breakAfter) {
+				if (segment.length) buf.push(new SegmentBox(segment));
 				segment = []
 			}
 		}
-		if(segment.length) buf.push(new SegmentBox(segment)); 
+		if (segment.length) buf.push(new SegmentBox(segment));
 		segment = [];
 		return hJoin(buf, STD_WRITE);
 	} else {
@@ -537,7 +536,7 @@ exports.SSStackBox = SSStackBox;
 exports.FSBox = FSBox;
 exports.BigOpBox = BigOpBox;
 
-exports.layoutSegment = function(boxes){
+exports.layoutSegment = function (boxes) {
 	return (new SegmentBox(boxes)).write()
 };
 exports.layout = layout;

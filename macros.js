@@ -760,6 +760,7 @@ void (function(){
 	macros.percent = sym("\u0025");
 	macros.ampersand = sym("\u0026");
 	macros.period = punct("\u002E");
+	macros.dot = sym("\u002E");
 	macros.mathslash = sym("\u002F");
 	macros.question = sym("\u003F");
 	macros.atsign = sym("\u0040");
@@ -2488,5 +2489,5 @@ void (function(){
 	macros['=>'] = macros.Rightarrow;
 	macros['<='] = macros.leq;
 	macros['>='] = macros.geq;
-
+	macros['|-'] = macros.vdash;
 })();
