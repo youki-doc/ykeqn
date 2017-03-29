@@ -37,232 +37,232 @@ var DESCENDER_INTEGRATE = parameters.DESCENDER_INTEGRATE;
 var OPERATOR_SHIFT = parameters.OPERATOR_SHIFT;
 var INTEGRATE_SHIFT = parameters.INTEGRATE_SHIFT;
 
-var CBM = function(s){
-	return function(){return new CBox(s)}
+var CBM = function (s) {
+	return function () { return new CBox(s) }
 }
-var BRBM = function(s){
-	return function(){return new BracketBox(s)}
+var BRBM = function (s) {
+	return function () { return new BracketBox(s) }
 }
-var OBM = function(s){
-	return function(){return new OpBox(s)}
+var OBM = function (s) {
+	return function () { return new OpBox(s) }
 }
-var XCBM = function(s){
-	return function(){return new BCBox(s, 'xc', 'aschar')}
+var XCBM = function (s) {
+	return function () { return new BCBox(s, 'xc', 'aschar') }
 }
-var BIGOPBM = function(s, scale, ascender, descender){
-	return function(){return new BigOpBox( new OpBox(s, 'bop', 'nobreak'), OPERATOR_SCALE, ASCENDER_OPERATOR, DESCENDER_OPERATOR, OPERATOR_SHIFT)}
+var BIGOPBM = function (s, scale, ascender, descender) {
+	return function () { return new BigOpBox(new OpBox(s, 'bop', 'nobreak'), OPERATOR_SCALE, ASCENDER_OPERATOR, DESCENDER_OPERATOR, OPERATOR_SHIFT) }
 }
-var INTEGRALBM = function(s, scale, ascender, descender){
-	return function(){return new BigOpBox( new OpBox(s, 'bop', 'nobreak'), INTEGRATE_SCALE, ASCENDER_INTEGRATE, DESCENDER_INTEGRATE, INTEGRATE_SHIFT)}
+var INTEGRALBM = function (s, scale, ascender, descender) {
+	return function () { return new BigOpBox(new OpBox(s, 'bop', 'nobreak'), INTEGRATE_SCALE, ASCENDER_INTEGRATE, DESCENDER_INTEGRATE, INTEGRATE_SHIFT) }
 }
-var VBM = function(s){
-	return function(){return new VarBox(s)}
+var VBM = function (s) {
+	return function () { return new VarBox(s) }
 }
-var SPBM = function(s){
-	return function(){return new SpBox(s)}
+var SPBM = function (s) {
+	return function () { return new SpBox(s) }
 }
 
 
 var macros = exports.macros = {};
-macros.over = function(left, right){
+macros.over = function (left, right) {
 	return new FracBox(left, right)
 }
-macros.tover = function(left, right){
-	return new RaiseBox(parameters.FRAC_MIDDLE - parameters.FRAC_PADDING_DEN * parameters.SS_SIZE, 
-		new ScaleBox(parameters.SS_SIZE, 
+macros.tover = function (left, right) {
+	return new RaiseBox(parameters.FRAC_MIDDLE - parameters.FRAC_PADDING_DEN * parameters.SS_SIZE,
+		new ScaleBox(parameters.SS_SIZE,
 			new RaiseBox(-parameters.FRAC_MIDDLE + parameters.FRAC_PADDING_DEN, new FracBox(left, right), true)), true)
 }
-macros.above = function(upper, lower){
+macros.above = function (upper, lower) {
 	var upperParts = [upper], lowerParts = [lower]
-	if(upper instanceof StackBox) upperParts = upper.parts
-	if(lower instanceof StackBox) lowerParts = lower.parts
+	if (upper instanceof StackBox) upperParts = upper.parts
+	if (lower instanceof StackBox) lowerParts = lower.parts
 	return new StackBox(upperParts.concat(lowerParts));
 }
-macros.aboveleft = function(upper, lower){
+macros.aboveleft = function (upper, lower) {
 	var upperParts = [upper], lowerParts = [lower]
-	if(upper instanceof StackBox) upperParts = upper.parts
-	if(lower instanceof StackBox) lowerParts = lower.parts
+	if (upper instanceof StackBox) upperParts = upper.parts
+	if (lower instanceof StackBox) lowerParts = lower.parts
 	return new StackBox(upperParts.concat(lowerParts), 'left');
 }
-macros.squared = function(operand){
+macros.squared = function (operand) {
 	return new SSBox(operand, new CBox('2'));
 }
-macros.sqrt = macros['sqrt:'] = function(operand){
+macros.sqrt = macros['sqrt:'] = function (operand) {
 	return new SqrtBox(operand);
 }
-macros.root = function(left, right){
+macros.root = function (left, right) {
 	return new HBox(new KernBox(parameters.ROOT_KERN, new RaiseBox(parameters.ROOT_RISE, new SSBox(new CBox(''), left))), new SqrtBox(right));
 }
-macros['^'] = function(base, sup){
-	if(base instanceof SSBox && ! base.sup){
+macros['^'] = function (base, sup) {
+	if (base instanceof SSBox && !base.sup) {
 		return new SSBox(base.base, sup, base.sub)
 	} else {
 		return new SSBox(base, sup)
 	}
 }
-macros['_'] = function(base, sub){
-	if(base instanceof SSBox && ! base.sub){
+macros['_'] = function (base, sub) {
+	if (base instanceof SSBox && !base.sub) {
 		return new SSBox(base.base, base.sup, sub)
 	} else {
 		return new SSBox(base, null, sub)
 	}
 }
-macros['^^'] = function(base, sup){
-	if(base instanceof SSStackBox && ! base.sup){
+macros['^^'] = function (base, sup) {
+	if (base instanceof SSStackBox && !base.sup) {
 		return new SSStackBox(base.base, sup, base.sub.content)
 	} else {
 		return new SSStackBox(base, sup)
 	}
 }
-macros['__'] = function(base, sub){
-	if(base instanceof SSStackBox && ! base.sub){
+macros['__'] = function (base, sub) {
+	if (base instanceof SSStackBox && !base.sub) {
 		return new SSStackBox(base.base, base.sup.content, sub)
 	} else {
 		return new SSStackBox(base, null, sub)
 	}
 }
-macros.set = function(content){
+macros.set = function (content) {
 	return new BBox('{', content, '}')
 }
 
-macros['rm'] = macros.fn = function(cb){
-	if(cb instanceof CBox){
+macros['rm'] = macros.fn = function (cb) {
+	if (cb instanceof CBox) {
 		return new CBox(cb.c)
 	} else {
 		return cb
 	}
 }
-macros['bf'] = function(cb){
-	if(cb instanceof CBox){
+macros['bf'] = function (cb) {
+	if (cb instanceof CBox) {
 		return new BfBox(cb.c)
 	} else {
 		return cb
 	}
 }
-macros['vr'] = function(cb){
-	if(cb instanceof CBox){
+macros['vr'] = function (cb) {
+	if (cb instanceof CBox) {
 		return new VarBox(cb.c)
 	} else {
 		return cb
 	}
 }
-macros.left = function(bracketLeft, content){
-	if(bracketLeft instanceof CBox){
+macros.left = function (bracketLeft, content) {
+	if (bracketLeft instanceof CBox) {
 		var bcl = bracketLeft
 	} else {
 		var bcl = ''
 	}
-	if(content instanceof BBox && content.left.c === ''){
+	if (content instanceof BBox && content.left.c === '') {
 		return new BBox(bcl, content.content, content.right)
 	} else {
 		return new BBox(bcl, content, '')
 	}
 }
 
-macros.right = function(content, bracketRight){
-	if(bracketRight instanceof CBox){
+macros.right = function (content, bracketRight) {
+	if (bracketRight instanceof CBox) {
 		var bcl = bracketRight
 	} else {
 		var bcl = ''
 	}
-	if(content instanceof BBox && content.right.c === ''){
+	if (content instanceof BBox && content.right.c === '') {
 		return new BBox(content.left, content.content, bcl)
 	} else {
 		return new BBox('', content, bcl)
 	}
 }
-macros.null = function(){ return null }
+macros.null = function () { return null }
 
 // Matrix macros
-macros['&'] = function(left, right){
-	if(!(left instanceof MatrixBox)) left = new MatrixBox([[left]]);
+macros['&'] = function (left, right) {
+	if (!(left instanceof MatrixBox)) left = new MatrixBox([[left]]);
 	var boxes = left.boxes;
-	if(!boxes[boxes.length - 1]) boxes[boxes.length - 1] = [];
+	if (!boxes[boxes.length - 1]) boxes[boxes.length - 1] = [];
 	boxes[boxes.length - 1].push(right);
 	return new MatrixBox(boxes)
 }
-macros['//'] = function(left, right){
-	if(!(left instanceof MatrixBox)) left = new MatrixBox([[left]]);
+macros['//'] = function (left, right) {
+	if (!(left instanceof MatrixBox)) left = new MatrixBox([[left]]);
 	var boxes = left.boxes.concat([[right]]);
 	return new MatrixBox(boxes);
 }
-macros['&&'] = function(left, right){
-	if(!(left instanceof MatrixBox)) left = new MatrixBox([[left]])
-	if(!(right instanceof MatrixBox)) right = new MatrixBox([[right]])
+macros['&&'] = function (left, right) {
+	if (!(left instanceof MatrixBox)) left = new MatrixBox([[left]])
+	if (!(right instanceof MatrixBox)) right = new MatrixBox([[right]])
 	var rows = Math.max(left.rows, right.rows);
 	var columns = left.columns + right.columns
 	var m = []
-	for(var j = 0; j < rows; j++){
+	for (var j = 0; j < rows; j++) {
 		var r = [];
-		for(var k = 0; k < left.columns; k++){
-			if(left.boxes[j] && left.boxes[j][k]) r.push(left.boxes[j][k])
+		for (var k = 0; k < left.columns; k++) {
+			if (left.boxes[j] && left.boxes[j][k]) r.push(left.boxes[j][k])
 			else r.push(null)
 		}
-		for(var k = 0; k < right.columns; k++){
-			if(right.boxes[j] && right.boxes[j][k]) r.push(right.boxes[j][k])
+		for (var k = 0; k < right.columns; k++) {
+			if (right.boxes[j] && right.boxes[j][k]) r.push(right.boxes[j][k])
 			else r.push(null)
 		};
 		m[j] = r;
 	};
 	return new MatrixBox(m)
 }
-macros['///'] = function(upper, lower){
-	if(!(upper instanceof MatrixBox)) upper = new MatrixBox([[upper]])
-	if(!(lower instanceof MatrixBox)) lower = new MatrixBox([[lower]])
+macros['///'] = function (upper, lower) {
+	if (!(upper instanceof MatrixBox)) upper = new MatrixBox([[upper]])
+	if (!(lower instanceof MatrixBox)) lower = new MatrixBox([[lower]])
 	return new MatrixBox(upper.boxes.concat(lower.boxes))
 }
-macros['malign'] = function(left, config){
-	if(!(config instanceof CBox)) return left;
-	if(!(left instanceof MatrixBox)) return left;
+macros['malign'] = function (left, config) {
+	if (!(config instanceof CBox)) return left;
+	if (!(left instanceof MatrixBox)) return left;
 	return new MatrixBox(left.boxes, config.c)
 }
 
 // Scale and raise
-macros['raise'] = function(left, config){
-	if(!(config instanceof CBox)) return left;
+macros['raise'] = function (left, config) {
+	if (!(config instanceof CBox)) return left;
 	return new RaiseBox((config.c - 0) || 0, left, true)
 }
-macros['justraise'] = function(left, config){
-	if(!(config instanceof CBox)) return left;
+macros['justraise'] = function (left, config) {
+	if (!(config instanceof CBox)) return left;
 	return new RaiseBox((config.c - 0) || 0, left, false)
 }
-macros['kern'] = function(left, config){
-	if(!(config instanceof CBox)) return left;
+macros['kern'] = function (left, config) {
+	if (!(config instanceof CBox)) return left;
 	return new KernBox((config.c - 0) || 0, left)
 }
 
-macros.underline = function(content){
+macros.underline = function (content) {
 	return new DecoBox(content, 'text-decoration: underline')
 };
-macros.red = function(content){
+macros.red = function (content) {
 	return new DecoBox(content, 'color:red')
 };
-macros.blue = function(content){
+macros.blue = function (content) {
 	return new DecoBox(content, 'color:blue')
 };
-macros.green = function(content){
+macros.green = function (content) {
 	return new DecoBox(content, 'color:green')
 };
-macros.nospace = function(content){ return new DecoBox(content, {nospace: true}) }
-macros.leftspace = function(content){ return new DecoBox(content, {spaceBefore: true}) }
-macros.rightspace = function(content){ return new DecoBox(content, {spaceAfter: true}) }
-macros.operatorspace = function(content){ return new DecoBox(content, {spaceBefore: true, spaceAfter: true}) }
-macros.forceleftspace = function(content){ return new DecoBox(content, {forceSpaceBefore: true}) }
-macros.forcerightspace = function(content){ return new DecoBox(content, {forceSpaceAfter: true}) }
+macros.nospace = function (content) { return new DecoBox(content, { nospace: true }) }
+macros.leftspace = function (content) { return new DecoBox(content, { spaceBefore: true }) }
+macros.rightspace = function (content) { return new DecoBox(content, { spaceAfter: true }) }
+macros.operatorspace = function (content) { return new DecoBox(content, { spaceBefore: true, spaceAfter: true }) }
+macros.forceleftspace = function (content) { return new DecoBox(content, { forceSpaceBefore: true }) }
+macros.forcerightspace = function (content) { return new DecoBox(content, { forceSpaceAfter: true }) }
 
-void (function(){
+void (function () {
 
-	var open = function(c){ return function(x){ return this.left(new BracketBox(c), x) }};
-	var close = function(c){ return function(x){ return this.right(x, new BracketBox(c)) }};
+	var open = function (c) { return function (x) { return this.left(new BracketBox(c), x) } };
+	var close = function (c) { return function (x) { return this.right(x, new BracketBox(c)) } };
 	var sym = CBM;
 	var mathchar = XCBM;
 	var bracketchar = BRBM;
 	var op = OBM;
 	var bigop = BIGOPBM;
 	var intop = INTEGRALBM;
-	var comb = function(s){
-		return function(b){
-			if(b instanceof CBox){
+	var comb = function (s) {
+		return function (b) {
+			if (b instanceof CBox) {
 				b.c += s
 				return b
 			} else {
@@ -270,8 +270,8 @@ void (function(){
 			}
 		}
 	};
-	var punct = function(s){
-		return function(){return new BCBox(s)}
+	var punct = function (s) {
+		return function () { return new BCBox(s) }
 	};
 
 	macros['Alpha'] = CBM("\u0391");
@@ -336,7 +336,7 @@ void (function(){
 	macros.squareroot = bracketchar("\u221A");
 	macros.cuberoot = bracketchar("\u221B");
 	macros.fourthroot = bracketchar("\u221C");
-	
+
 	// These are symbols imported from Unicode Math.
 	macros.lparen = bracketchar("\u0028");
 	macros.lbrack = bracketchar("\u005B");
@@ -403,9 +403,9 @@ void (function(){
 	macros.rvarbrbrak = bracketchar("\u3015");
 	macros.rVarbrbrak = bracketchar("\u3019");
 
-	macros['paren:'] = macros['lparen:'] = open("\u0028");
-	macros['brack:'] = macros['lbrack:'] = open("\u005B");
-	macros['brace:'] = macros['lbrace:'] = open("\u007B");
+	macros['paren:'] = macros['lparen:'] = macros['(:'] = open("\u0028");
+	macros['brack:'] = macros['lbrack:'] = macros['[:'] = open("\u005B");
+	macros['brace:'] = macros['lbrace:'] = macros['{:'] = open("\u007B");
 	macros['ceil:'] = macros['lceil:'] = open("\u2308");
 	macros['floor:'] = macros['lfloor:'] = open("\u230A");
 	macros['ucorner:'] = macros['ulcorner:'] = open("\u231C");
@@ -415,7 +415,7 @@ void (function(){
 	macros['bag:'] = macros['lbag:'] = open("\u27C5");
 	macros['ongdivision:'] = macros['longdivision:'] = open("\u27CC");
 	macros['Brack:'] = macros['lBrack:'] = open("\u27E6");
-	macros['angle:'] = macros['langle:'] = open("\u27E8");
+	macros['angle:'] = macros['langle:'] = macros['<:'] = open("\u27E8");
 	macros['Angle:'] = macros['lAngle:'] = open("\u27EA");
 	macros['Brbrak:'] = macros['lBrbrak:'] = open("\u27EC");
 	macros['group:'] = macros['lgroup:'] = open("\u27EE");
@@ -438,9 +438,9 @@ void (function(){
 	macros['blank:'] = macros['lblank:'] = open("");
 	macros['|:'] = open("|");
 
-	macros[':paren'] = macros[':rparen'] = close("\u0029");
-	macros[':brack'] = macros[':rbrack'] = close("\u005D");
-	macros[':brace'] = macros[':rbrace'] = close("\u007D");
+	macros[':paren'] = macros[':rparen'] = macros[':)'] = close("\u0029");
+	macros[':brack'] = macros[':rbrack'] = macros[':]'] = close("\u005D");
+	macros[':brace'] = macros[':rbrace'] = macros[':}'] = close("\u007D");
 	macros[':ceil'] = macros[':rceil'] = close("\u2309");
 	macros[':floor'] = macros[':rfloor'] = close("\u230B");
 	macros[':ucorner'] = macros[':urcorner'] = close("\u231D");
@@ -449,7 +449,7 @@ void (function(){
 	macros[':brbrak'] = macros[':rbrbrak'] = close("\u2773");
 	macros[':bag'] = macros[':rbag'] = close("\u27C6");
 	macros[':Brack'] = macros[':rBrack'] = close("\u27E7");
-	macros[':angle'] = macros[':rangle'] = close("\u27E9");
+	macros[':angle'] = macros[':rangle'] = macros[':>'] = close("\u27E9");
 	macros[':Angle'] = macros[':rAngle'] = close("\u27EB");
 	macros[':Brbrak'] = macros[':rBrbrak'] = close("\u27ED");
 	macros[':group'] = macros[':rgroup'] = close("\u27EF");
@@ -509,7 +509,7 @@ void (function(){
 	macros.overleftrightarrow = comb("\u20E1");
 	macros.annuity = comb("\u20E7");
 	macros.widebridgeabove = comb("\u20E9");
-	macros.asteraccent = comb("\u20F0"); 
+	macros.asteraccent = comb("\u20F0");
 	macros.wideutilde = comb("\u0330");
 	macros.underbar = comb("\u0331");
 	macros.threeunderdot = comb("\u20E8");
@@ -613,7 +613,7 @@ void (function(){
 	macros.ominus = op("\u2296");
 	macros.otimes = op("\u2297");
 	macros.oslash = op("\u2298");
-	macros.odot = op("\u2299"); 
+	macros.odot = op("\u2299");
 	macros.circledcirc = op("\u229A");
 	macros.circledast = op("\u229B");
 	macros.circledequal = op("\u229C");
@@ -662,7 +662,7 @@ void (function(){
 	macros.operp = op("\u29B9");
 	macros.olessthan = op("\u29C0");
 	macros.ogreaterthan = op("\u29C1");
-	macros.boxdiag = op("\u29C4"); 
+	macros.boxdiag = op("\u29C4");
 	macros.boxbslash = op("\u29C5");
 	macros.boxast = op("\u29C6");
 	macros.boxcircle = op("\u29C7");
@@ -712,7 +712,7 @@ void (function(){
 	macros.capdot = op("\u2A40");
 	macros.uminus = op("\u2A41");
 	macros.barcup = op("\u2A42");
-	macros.barcap = op("\u2A43"); 
+	macros.barcap = op("\u2A43");
 	macros.capwedge = op("\u2A44");
 	macros.cupvee = op("\u2A45");
 	macros.cupovercap = op("\u2A46");
@@ -802,7 +802,7 @@ void (function(){
 	macros.sansLmirrored = sym("\u2143");
 	macros.Yup = sym("\u2144");
 	macros.mitBbbD = sym("\u2145");
-	macros.mitBbbd = sym("\u2146"); 
+	macros.mitBbbd = sym("\u2146");
 	macros.mitBbbe = sym("\u2147");
 	macros.mitBbbi = sym("\u2148");
 	macros.mitBbbj = sym("\u2149");
@@ -852,7 +852,7 @@ void (function(){
 	macros.sqlozenge = sym("\u2311");
 	macros.profline = sym("\u2312");
 	macros.profsurf = sym("\u2313");
-	macros.viewdata = sym("\u2317"); 
+	macros.viewdata = sym("\u2317");
 	macros.turnednot = sym("\u2319");
 	macros.inttop = sym("\u2320");
 	macros.intbottom = sym("\u2321");
@@ -878,7 +878,7 @@ void (function(){
 	macros.rbracklend = sym("\u23A6");
 	macros.lbraceuend = sym("\u23A7");
 	macros.lbracemid = sym("\u23A8");
-	macros.lbracelend = sym("\u23A9"); 
+	macros.lbracelend = sym("\u23A9");
 	macros.vbraceextender = sym("\u23AA");
 	macros.rbraceuend = sym("\u23AB");
 	macros.rbracemid = sym("\u23AC");
@@ -919,7 +919,7 @@ void (function(){
 	macros.squarevfill = sym("\u25A5");
 	macros.squarehvfill = sym("\u25A6");
 	macros.squarenwsefill = sym("\u25A7");
-	macros.squareneswfill = sym("\u25A8"); 
+	macros.squareneswfill = sym("\u25A8");
 	macros.squarecrossfill = sym("\u25A9");
 	macros.smblksquare = sym("\u25AA");
 	macros.smwhtsquare = sym("\u25AB");
@@ -969,7 +969,7 @@ void (function(){
 	macros.ularc = sym("\u25DC");
 	macros.urarc = sym("\u25DD");
 	macros.lrarc = sym("\u25DE");
-	macros.llarc = sym("\u25DF"); 
+	macros.llarc = sym("\u25DF");
 	macros.topsemicircle = sym("\u25E0");
 	macros.botsemicircle = sym("\u25E1");
 	macros.lrblacktriangle = sym("\u25E2");
@@ -1019,7 +1019,7 @@ void (function(){
 	macros.varheartsuit = sym("\u2665");
 	macros.vardiamondsuit = sym("\u2666");
 	macros.varclubsuit = sym("\u2667");
-	macros.quarternote = sym("\u2669"); 
+	macros.quarternote = sym("\u2669");
 	macros.eighthnote = sym("\u266A");
 	macros.twonotes = sym("\u266B");
 	macros.flat = sym("\u266D");
@@ -1069,7 +1069,7 @@ void (function(){
 	macros.rightanglesqr = sym("\u299C");
 	macros.rightanglemdot = sym("\u299D");
 	macros.angles = sym("\u299E");
-	macros.angdnr = sym("\u299F"); 
+	macros.angdnr = sym("\u299F");
 	macros.gtlpar = sym("\u29A0");
 	macros.sphericalangleup = sym("\u29A1");
 	macros.turnangle = sym("\u29A2");
@@ -1114,7 +1114,7 @@ void (function(){
 	macros.circledownarrow = sym("\u29EC");
 	macros.blackcircledownarrow = sym("\u29ED");
 	macros.errbarsquare = sym("\u29EE");
-	macros.errbarblacksquare = sym("\u29EF"); 
+	macros.errbarblacksquare = sym("\u29EF");
 	macros.errbardiamond = sym("\u29F0");
 	macros.errbarblackdiamond = sym("\u29F1");
 	macros.errbarcircle = sym("\u29F2");
@@ -1164,7 +1164,7 @@ void (function(){
 	macros.mbfthree = sym("&#x1D7D1;");
 	macros.mbffour = sym("&#x1D7D2;");
 	macros.mbffive = sym("&#x1D7D3;");
-	macros.mbfsix = sym("&#x1D7D4;"); 
+	macros.mbfsix = sym("&#x1D7D4;");
 	macros.mbfseven = sym("&#x1D7D5;");
 	macros.mbfeight = sym("&#x1D7D6;");
 	macros.mbfnine = sym("&#x1D7D7;");
@@ -1255,7 +1255,7 @@ void (function(){
 	macros.upharpoonright = op("\u21BE");
 	macros.upharpoonleft = op("\u21BF");
 	macros.rightharpoonup = op("\u21C0");
-	macros.rightharpoondown = op("\u21C1"); 
+	macros.rightharpoondown = op("\u21C1");
 	macros.downharpoonright = op("\u21C2");
 	macros.downharpoonleft = op("\u21C3");
 	macros.rightleftarrows = op("\u21C4");
@@ -1305,7 +1305,7 @@ void (function(){
 	macros.nni = op("\u220C");
 	macros.smallni = op("\u220D");
 	macros.propto = op("\u221D");
-	macros.mid = op("\u2223"); 
+	macros.mid = op("\u2223");
 	macros.nmid = op("\u2224");
 	macros.parallel = op("\u2225");
 	macros.nparallel = op("\u2226");
@@ -1355,7 +1355,7 @@ void (function(){
 	macros.geq = op("\u2265");
 	macros.leqq = op("\u2266");
 	macros.geqq = op("\u2267");
-	macros.lneqq = op("\u2268"); 
+	macros.lneqq = op("\u2268");
 	macros.gneqq = op("\u2269");
 	macros.ll = op("\u226A");
 	macros.gg = op("\u226B");
@@ -1405,7 +1405,7 @@ void (function(){
 	macros.VDash = op("\u22AB");
 	macros.nvdash = op("\u22AC");
 	macros.nvDash = op("\u22AD");
-	macros.nVdash = op("\u22AE"); 
+	macros.nVdash = op("\u22AE");
 	macros.nVDash = op("\u22AF");
 	macros.prurel = op("\u22B0");
 	macros.scurel = op("\u22B1");
@@ -1455,7 +1455,7 @@ void (function(){
 	macros.isindot = op("\u22F5");
 	macros.varisinobar = op("\u22F6");
 	macros.isinobar = op("\u22F7");
-	macros.isinvb = op("\u22F8"); 
+	macros.isinvb = op("\u22F8");
 	macros.isinE = op("\u22F9");
 	macros.nisd = op("\u22FA");
 	macros.varnis = op("\u22FB");
@@ -1504,7 +1504,7 @@ void (function(){
 	macros.Mapsfrom = op("\u2906");
 	macros.Mapsto = op("\u2907");
 	macros.downarrowbarred = op("\u2908");
-	macros.uparrowbarred = op("\u2909"); 
+	macros.uparrowbarred = op("\u2909");
 	macros.Uuparrow = op("\u290A");
 	macros.Ddownarrow = op("\u290B");
 	macros.leftbkarrow = op("\u290C");
@@ -1553,7 +1553,7 @@ void (function(){
 	macros.cwcirclearrow = op("\u2941");
 	macros.rightarrowshortleftarrow = op("\u2942");
 	macros.leftarrowshortrightarrow = op("\u2943");
-	macros.shortrightarrowleftarrow = op("\u2944"); 
+	macros.shortrightarrowleftarrow = op("\u2944");
 	macros.rightarrowplus = op("\u2945");
 	macros.leftarrowplus = op("\u2946");
 	macros.rightarrowx = op("\u2947");
@@ -1598,7 +1598,7 @@ void (function(){
 	macros.updownharpoonsleftright = op("\u296E");
 	macros.downupharpoonsleftright = op("\u296F");
 	macros.rightimply = op("\u2970");
-	macros.equalrightarrow = op("\u2971"); 
+	macros.equalrightarrow = op("\u2971");
 	macros.similarrightarrow = op("\u2972");
 	macros.leftarrowsimilar = op("\u2973");
 	macros.rightarrowsimilar = op("\u2974");
@@ -1648,7 +1648,7 @@ void (function(){
 	macros.equivDD = op("\u2A78");
 	macros.ltcir = op("\u2A79");
 	macros.gtcir = op("\u2A7A");
-	macros.ltquest = op("\u2A7B"); 
+	macros.ltquest = op("\u2A7B");
 	macros.gtquest = op("\u2A7C");
 	macros.leqslant = op("\u2A7D");
 	macros.geqslant = op("\u2A7E");
@@ -1696,7 +1696,7 @@ void (function(){
 	macros.lescc = op("\u2AA8");
 	macros.gescc = op("\u2AA9");
 	macros.smt = op("\u2AAA");
-	macros.lat = op("\u2AAB"); 
+	macros.lat = op("\u2AAB");
 	macros.smte = op("\u2AAC");
 	macros.late = op("\u2AAD");
 	macros.bumpeqq = op("\u2AAE");
@@ -1746,7 +1746,7 @@ void (function(){
 	macros.topfork = op("\u2ADA");
 	macros.mlcp = op("\u2ADB");
 	macros.forks = op("\u2ADC");
-	macros.forksnot = op("\u2ADD"); 
+	macros.forksnot = op("\u2ADD");
 	macros.shortlefttack = op("\u2ADE");
 	macros.shortdowntack = op("\u2ADF");
 	macros.shortuptack = op("\u2AE0");
@@ -1795,7 +1795,7 @@ void (function(){
 	macros.LLeftarrow = op("\u2B45");
 	macros.RRightarrow = op("\u2B46");
 	macros.bsimilarrightarrow = op("\u2B47");
-	macros.rightarrowbackapprox = op("\u2B48"); 
+	macros.rightarrowbackapprox = op("\u2B48");
 	macros.similarleftarrow = op("\u2B49");
 	macros.leftarrowapprox = op("\u2B4A");
 	macros.leftarrowbsimilar = op("\u2B4B");
@@ -1819,12 +1819,12 @@ void (function(){
 	macros.mscrW = mathchar("&#x1D4B2;");
 	macros.mscrX = mathchar("&#x1D4B3;");
 	macros.mscrY = mathchar("&#x1D4B4;");
-	macros.mscrZ = mathchar("&#x1D4B5;"); 
+	macros.mscrZ = mathchar("&#x1D4B5;");
 	macros.mscra = mathchar("&#x1D4B6;");
 	macros.mscrb = mathchar("&#x1D4B7;");
 	macros.mscrc = mathchar("&#x1D4B8;");
 	macros.mscrd = mathchar("&#x1D4B9;");
-	macros.mscrf = mathchar("&#x1D4BB;"); 
+	macros.mscrf = mathchar("&#x1D4BB;");
 	macros.mscrh = mathchar("&#x1D4BD;");
 	macros.mscri = mathchar("&#x1D4BE;");
 	macros.mscrj = mathchar("&#x1D4BF;");
@@ -1889,7 +1889,7 @@ void (function(){
 	macros.mfrakw = mathchar("&#x1D534;");
 	macros.mfrakx = mathchar("&#x1D535;");
 	macros.mfraky = mathchar("&#x1D536;");
-	macros.mfrakz = mathchar("&#x1D537;"); 
+	macros.mfrakz = mathchar("&#x1D537;");
 	macros.BbbA = mathchar("&#x1D538;");
 	macros.BbbB = mathchar("&#x1D539;");
 	macros.BbbD = mathchar("&#x1D53B;");
@@ -1904,11 +1904,11 @@ void (function(){
 	macros.BbbO = mathchar("&#x1D546;");
 	macros.BbbS = mathchar("&#x1D54A;");
 	macros.BbbT = mathchar("&#x1D54B;");
-	macros.BbbU = mathchar("&#x1D54C;"); 
+	macros.BbbU = mathchar("&#x1D54C;");
 	macros.BbbV = mathchar("&#x1D54D;");
 	macros.BbbW = mathchar("&#x1D54E;");
 	macros.BbbX = mathchar("&#x1D54F;");
-	macros.BbbY = mathchar("&#x1D550;"); 
+	macros.BbbY = mathchar("&#x1D550;");
 	macros.Bbba = mathchar("&#x1D552;");
 	macros.Bbbb = mathchar("&#x1D553;");
 	macros.Bbbc = mathchar("&#x1D554;");
@@ -1934,13 +1934,13 @@ void (function(){
 	macros.Bbbw = mathchar("&#x1D568;");
 	macros.Bbbx = mathchar("&#x1D569;");
 	macros.Bbby = mathchar("&#x1D56A;");
-	macros.Bbbz = mathchar("&#x1D56B;"); 
+	macros.Bbbz = mathchar("&#x1D56B;");
 	macros.msansA = mathchar("&#x1D5A0;");
 	macros.msansB = mathchar("&#x1D5A1;");
 	macros.msansC = mathchar("&#x1D5A2;");
 	macros.msansD = mathchar("&#x1D5A3;");
 	macros.msansE = mathchar("&#x1D5A4;");
-	macros.msansF = mathchar("&#x1D5A5;"); 
+	macros.msansF = mathchar("&#x1D5A5;");
 	macros.msansG = mathchar("&#x1D5A6;");
 	macros.msansH = mathchar("&#x1D5A7;");
 	macros.msansI = mathchar("&#x1D5A8;");
@@ -1960,7 +1960,7 @@ void (function(){
 	macros.msansW = mathchar("&#x1D5B6;");
 	macros.msansX = mathchar("&#x1D5B7;");
 	macros.msansY = mathchar("&#x1D5B8;");
-	macros.msansZ = mathchar("&#x1D5B9;"); 
+	macros.msansZ = mathchar("&#x1D5B9;");
 	macros.msansa = mathchar("&#x1D5BA;");
 	macros.msansb = mathchar("&#x1D5BB;");
 	macros.msansc = mathchar("&#x1D5BC;");
@@ -1983,10 +1983,10 @@ void (function(){
 	macros.msanst = mathchar("&#x1D5CD;");
 	macros.msansu = mathchar("&#x1D5CE;");
 	macros.msansv = mathchar("&#x1D5CF;");
-	macros.msansw = mathchar("&#x1D5D0;"); 
+	macros.msansw = mathchar("&#x1D5D0;");
 	macros.msansx = mathchar("&#x1D5D1;");
 	macros.msansy = mathchar("&#x1D5D2;");
-	macros.msansz = mathchar("&#x1D5D3;"); 
+	macros.msansz = mathchar("&#x1D5D3;");
 	macros.mitsansA = mathchar("&#x1D608;");
 	macros.mitsansB = mathchar("&#x1D609;");
 	macros.mitsansC = mathchar("&#x1D60A;");
@@ -2012,14 +2012,14 @@ void (function(){
 	macros.mitsansW = mathchar("&#x1D61E;");
 	macros.mitsansX = mathchar("&#x1D61F;");
 	macros.mitsansY = mathchar("&#x1D620;");
-	macros.mitsansZ = mathchar("&#x1D621;"); 
+	macros.mitsansZ = mathchar("&#x1D621;");
 	macros.mitsansa = mathchar("&#x1D622;");
 	macros.mitsansb = mathchar("&#x1D623;");
 	macros.mitsansc = mathchar("&#x1D624;");
 	macros.mitsansd = mathchar("&#x1D625;");
 	macros.mitsanse = mathchar("&#x1D626;");
 	macros.mitsansf = mathchar("&#x1D627;");
-	macros.mitsansg = mathchar("&#x1D628;"); 
+	macros.mitsansg = mathchar("&#x1D628;");
 	macros.mitsansh = mathchar("&#x1D629;");
 	macros.mitsansi = mathchar("&#x1D62A;");
 	macros.mitsansj = mathchar("&#x1D62B;");
@@ -2038,7 +2038,7 @@ void (function(){
 	macros.mitsansw = mathchar("&#x1D638;");
 	macros.mitsansx = mathchar("&#x1D639;");
 	macros.mitsansy = mathchar("&#x1D63A;");
-	macros.mitsansz = mathchar("&#x1D63B;"); 
+	macros.mitsansz = mathchar("&#x1D63B;");
 	macros.mttA = mathchar("&#x1D670;");
 	macros.mttB = mathchar("&#x1D671;");
 	macros.mttC = mathchar("&#x1D672;");
@@ -2062,9 +2062,9 @@ void (function(){
 	macros.mttU = mathchar("&#x1D684;");
 	macros.mttV = mathchar("&#x1D685;");
 	macros.mttW = mathchar("&#x1D686;");
-	macros.mttX = mathchar("&#x1D687;"); 
+	macros.mttX = mathchar("&#x1D687;");
 	macros.mttY = mathchar("&#x1D688;");
-	macros.mttZ = mathchar("&#x1D689;"); 
+	macros.mttZ = mathchar("&#x1D689;");
 	macros.mtta = mathchar("&#x1D68A;");
 	macros.mttb = mathchar("&#x1D68B;");
 	macros.mttc = mathchar("&#x1D68C;");
@@ -2413,7 +2413,7 @@ void (function(){
 	macros.mbfitsansvarphi = mathchar("&#x1D7C7;");
 	macros.mbfitsansvarrho = mathchar("&#x1D7C8;");
 	macros.mbfitsansvarpi = mathchar("&#x1D7C9;");
-	
+
 	macros.matheth = mathchar("\u00F0");
 	macros.BbbC = mathchar("\u2102");
 	macros.mscrg = mathchar("\u210A");

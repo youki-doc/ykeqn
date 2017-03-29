@@ -1,5 +1,16 @@
 var parameters = require('./parameters')
 
+function hescape(source) {
+	return ('' + source)
+		.replace(/&/g, '&amp;')
+		.replace(/\{/g, '&lbrace;')
+		.replace(/\}/g, '&rbrace;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;');
+}
+
 var LINE_HEIGHT = parameters.LINE_HEIGHT
 var CHAR_ASC = parameters.CHAR_ASC
 var CHAR_DESC = parameters.CHAR_DESC
@@ -70,7 +81,7 @@ var VarBox = function (c) {
 }
 VarBox.prototype = new CBox;
 VarBox.prototype.write = function () {
-	return '<var>' + this.c + '</var>'
+	return '<var>' + hescape(this.c) + '</var>'
 }
 var NumberBox = function (c) {
 	this.height = CHAR_ASC
@@ -79,7 +90,7 @@ var NumberBox = function (c) {
 }
 NumberBox.prototype = new CBox;
 NumberBox.prototype.write = function () {
-	return '<var class="nm">' + this.c + '</var>'
+	return '<var class="nm">' + hescape(this.c) + '</var>'
 }
 var CodeBox = function (c) {
 	this.height = CHAR_ASC
@@ -88,7 +99,7 @@ var CodeBox = function (c) {
 }
 CodeBox.prototype = new CBox;
 CodeBox.prototype.write = function () {
-	return '<code>' + this.c + '</code>'
+	return '<code>' + hescape(this.c) + '</code>'
 }
 var BfBox = function (c) {
 	this.height = CHAR_ASC
@@ -97,7 +108,7 @@ var BfBox = function (c) {
 }
 BfBox.prototype = new CBox;
 BfBox.prototype.write = function () {
-	return '<b>' + this.c + '</b>'
+	return '<b>' + hescape(this.c) + '</b>'
 }
 var OpBox = function (c, tag, nobreak) {
 	this.height = CHAR_ASC
@@ -116,7 +127,7 @@ OpBox.prototype.spaceBefore = 10;
 OpBox.prototype.spaceAfter = 10;
 OpBox.prototype.write = function (adjLeft, adjRight) {
 	var tag = this.tag || 'op'
-	return '<' + tag + '>' + this.c + '</' + tag + '>'
+	return '<' + tag + '>' + hescape(this.c) + '</' + tag + '>'
 }
 var SpBox = function (c) {
 	this.height = CHAR_ASC
@@ -127,7 +138,7 @@ SpBox.prototype = new CBox;
 SpBox.prototype.breakBefore = true;
 SpBox.prototype.breakAfter = true;
 SpBox.prototype.write = function () {
-	return '<sp>' + this.c + '</sp>'
+	return '<sp>' + hescape(this.c) + '</sp>'
 }
 var BCBox = function (c, tag, nobreak) {
 	this.height = CHAR_ASC
@@ -144,7 +155,7 @@ BCBox.prototype.breakAfter = true;
 BCBox.prototype.spaceAfter = true;
 BCBox.prototype.write = function (adjLeft, adjRight) {
 	var tag = this.tag || 'op'
-	return '<' + tag + '>' + this.c + '</' + tag + '>'
+	return '<' + tag + '>' + hescape(this.c) + '</' + tag + '>'
 }
 var BracketBox = function (c) {
 	this.height = BRACKET_ASC
