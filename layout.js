@@ -35,22 +35,23 @@ var BRACKET_ASC = parameters.BRACKET_ASC
 var BRACKET_DESC = parameters.BRACKET_DESC
 var BRACKET_GEARS = parameters.BRACKET_GEARS
 
-var MATH_SPACE = '<sp>\u2005</sp>'
-var FORCE_SPACE = '<sf>\u2005</sf>'
+var MATH_SPACE = '<span class=sp>\u2005</span>'
+var FORCE_SPACE = '<span class=sf>\u2005</span>'
 var MATRIX_SPACE = '\u2000'
+var TOPLEVEL_MATRIX_JOINER = '<!--%%%TOPLEVEL_MATRIX_JOINER%%%-->'
 
 function em(x) { return (Math.round(x * 100) / 100).toFixed(3).replace(/\.?0+$/, '') + 'em' }
 function arr1(box, rise, height, depth) {
 	return arrx([box], [rise], height, depth)
 }
 function arrx(boxes, rises, height, depth, cl, scales) {
-	var buf = '<r style="height:' + em(height + depth) + ';vertical-align:' + em(height - CHAR_ASC) + '"' + (cl ? ' class="' + cl + '"' : '') + '><eb>{</eb>';
+	var buf = '<span style="height:' + em(height + depth) + ';vertical-align:' + em(height - CHAR_ASC) + '"' + (cl ? ' class="r ' + cl + '"' : 'class=r') + '><span class=eb>{</span>';
 	for (var j = 0; j < boxes.length; j++) if (boxes[j]) {
 		if (scales) var scale = scales[j];
 		else var scale = 1;
-		buf += '<ri style="top:' + em((height - rises[j]) / scale - boxes[j].height) + (scale && scale !== 1 ? ';font-size:' + em(scale) : '') + '">' + boxes[j].write() + '</ri>'
+		buf += '<span class=ri style="top:' + em((height - rises[j]) / scale - boxes[j].height) + (scale && scale !== 1 ? ';font-size:' + em(scale) : '') + '">' + boxes[j].write() + '</span>'
 	}
-	buf += '<eb>}</eb></r>'
+	buf += '<span class=eb>}</span></span>'
 	return buf;
 }
 var EMDIST = em;
@@ -101,6 +102,17 @@ CodeBox.prototype = new CBox;
 CodeBox.prototype.write = function () {
 	return '<code>' + hescape(this.c) + '</code>'
 }
+var CSBox = function (c, tag, styl) {
+	this.height = CHAR_ASC
+	this.depth = CHAR_DESC
+	this.c = c
+	this.tag = tag
+	this.styl = styl
+}
+CSBox.prototype = new CBox;
+CSBox.prototype.write = function () {
+	return '<' + this.tag + (this.styl ? ' ' + this.styl : '') + '>' + hescape(this.c) + '</' + this.tag + '>'
+}
 var BfBox = function (c) {
 	this.height = CHAR_ASC
 	this.depth = CHAR_DESC
@@ -127,7 +139,7 @@ OpBox.prototype.spaceBefore = 10;
 OpBox.prototype.spaceAfter = 10;
 OpBox.prototype.write = function (adjLeft, adjRight) {
 	var tag = this.tag || 'op'
-	return '<' + tag + '>' + hescape(this.c) + '</' + tag + '>'
+	return '<span class=' + tag + '>' + hescape(this.c) + '</span>'
 }
 var SpBox = function (c) {
 	this.height = CHAR_ASC
@@ -137,14 +149,26 @@ var SpBox = function (c) {
 SpBox.prototype = new CBox;
 SpBox.prototype.breakBefore = true;
 SpBox.prototype.breakAfter = true;
+SpBox.prototype.spaceBefore = -9999;
+SpBox.prototype.spaceAfter = -9999;
 SpBox.prototype.write = function () {
-	return '<sp>' + hescape(this.c) + '</sp>'
+	return '<span class=sp>' + hescape(this.c) + '</span>'
 }
-var BCBox = function (c, tag, nobreak) {
+var LSpBox = function (c) {
 	this.height = CHAR_ASC
 	this.depth = CHAR_DESC
 	this.c = c
+}
+LSpBox.prototype = new CBox;
+LSpBox.prototype.spaceBefore = 9998;
+LSpBox.prototype.spaceAfter = 9998;
+LSpBox.prototype.write = function () { return '' }
+var BCBox = function (c, tag, nobreak, raw) {
+	this.height = CHAR_ASC;
+	this.depth = CHAR_DESC;
+	this.c = c;
 	this.tag = tag;
+	this.raw = raw;
 	if (nobreak) {
 		this.breakBefore = this.breakAfter = false;
 		this.spaceBefore = this.spaceAfter = 0;
@@ -155,7 +179,7 @@ BCBox.prototype.breakAfter = true;
 BCBox.prototype.spaceAfter = true;
 BCBox.prototype.write = function (adjLeft, adjRight) {
 	var tag = this.tag || 'op'
-	return '<' + tag + '>' + hescape(this.c) + '</' + tag + '>'
+	return '<' + tag + '>' + (this.raw ? (x => x) : hescape)(this.c) + '</' + tag + '>'
 }
 var BracketBox = function (c) {
 	this.height = BRACKET_ASC
@@ -174,7 +198,7 @@ var ScaleBox = function (scale, b) {
 }
 ScaleBox.prototype = new Box;
 ScaleBox.prototype.write = function () {
-	return '<r style="height:' + EMDIST(this.height + this.depth) + '"><ri style="font-size:' + em(this.scale) + '">' + this.content.write() + '</ri></r>'
+	return '<span class=r style="height:' + EMDIST(this.height + this.depth) + '"><span class=ri style="font-size:' + em(this.scale) + '">' + this.content.write() + '</span></span>'
 }
 var RaiseBox = function (raise, b, recalculateMetrics) {
 	this.content = b;
@@ -196,7 +220,7 @@ var KernBox = function (kern, b) {
 }
 KernBox.prototype = new Box;
 KernBox.prototype.write = function (adjLeft, adjRight) {
-	return '<r style="margin-right:' + em(this.kern) + '">' + this.content.write(adjLeft, false) + '</r>'
+	return '<span class=r style="margin-right:' + em(this.kern) + '">' + this.content.write(adjLeft, false) + '</span>'
 }
 
 function FracLineBox() {
@@ -205,7 +229,7 @@ function FracLineBox() {
 }
 FracLineBox.prototype = new Box;
 FracLineBox.prototype.write = function () {
-	return '<fl>/</fl>'
+	return '<span class=fl>/</span>'
 }
 function FracBox(num, den) {
 	this.num = num;
@@ -285,16 +309,21 @@ MatrixBox.prototype.write = function () {
 		}
 		buf[k] = arrx(column, rises, this.height, this.depth, 'mc' + (this.alignments[k] || '').trim())
 	};
-	return buf.join(MATRIX_SPACE);
+	return buf.join(this.joiner || MATRIX_SPACE);
 }
 
 function hJoin(parts, f) {
-	var buf = '';
+	var buf = [];
 	for (var i = 0; i < parts.length; i++) {
-		buf += (i > 0 && ((parts[i].spaceBefore - 0) + (parts[i - 1].spaceAfter - 0) > 0) ? (parts[i].forceSpaceBefore || parts[i - 1].forceSpaceAfter ? FORCE_SPACE : MATH_SPACE) : '')
-			+ f(parts[i]);
+		if(i > 0 && buf.length && buf[buf.length - 1].type !== 'space'){
+			if((parts[i].spaceBefore - 0) + (parts[i - 1].spaceAfter - 0) > 0) {
+				buf.push({type:'space', content: (parts[i].forceSpaceBefore || parts[i - 1].forceSpaceAfter ? FORCE_SPACE : MATH_SPACE)})
+			}
+		}
+		var d = f(parts[i]);
+		if(d){ buf.push({type:'content', content:d}) }
 	}
-	return buf;
+	return buf.map(x=>x.content).join('');
 }
 function STD_WRITE(box) {
 	return box.write();
@@ -345,12 +374,12 @@ var BBox = function (left, content, right) {
 }
 
 var scale_span = function (v, t, k, aux) {
-	return '<e class="' + (k || 'bb') + '" style="transform:scaley(' + v + ');'
+	return '<span class="e ' + (k || 'bb') + '" style="transform:scaley(' + v + ');'
 		+ '-webkit-transform:scaley(' + v + ');'
 		+ '-moz-transform:scaley(' + v + ');'
 		+ '-ms-transform:scaley(' + v + ');'
 		+ '-o-transform:scaley(' + v + ');'
-		+ (aux || '') + '">' + t + "</e>"
+		+ (aux || '') + '">' + t + "</span>"
 }
 BBox.prototype = new Box;
 BBox.prototype.write = function () {
@@ -367,7 +396,7 @@ BBox.prototype.write = function () {
 	if (SCALE_V >= 4) scaleClass = ' bigg'
 	if (SCALE_V <= 1.1) {
 		SCALE_V = 1;
-		return '<e class="bn l">' + this.left.write() + '</e>' + (this.content.write()).replace(/[\s\u2009\u205f]+((?:<\/i>)+)$/, '$1') + '<e class="bn r">' + this.right.write() + '</e>';
+		return '<span class="e bn l">' + this.left.write() + '</span>' + (this.content.write()).replace(/[\s\u2009\u205f]+((?:<\/i>)+)$/, '$1') + '<span class="e bn r">' + this.right.write() + '</span>';
 	} else {
 		var SCALE_H = 1 + Math.pow(SCALE_V - 1, 0.3) * 0.375;
 		var baselineAdjustment = - (halfwayHeight * SCALE_H - halfwayHeight) / SCALE_H;
@@ -385,7 +414,7 @@ function SqrtInternalBox(content) {
 }
 SqrtInternalBox.prototype = new Box;
 SqrtInternalBox.prototype.write = function () {
-	return '<sqrt style="margin-top:' + em(FRAC_PADDING_DEN) + '"><sk style="padding: ' + EMDIST(FRAC_PADDING_DEN) + ' 0 0">' + this.content.write() + '</sk></sqrt>'
+	return '<sqrt style="margin-top:' + em(FRAC_PADDING_DEN) + '"><span class=sk style="padding: ' + EMDIST(FRAC_PADDING_DEN) + ' 0 0">' + this.content.write() + '</span></sqrt>'
 }
 
 var SqrtBox = function (content) {
@@ -414,7 +443,7 @@ var DecoBox = function (content, deco) {
 }
 DecoBox.prototype = new Box;
 DecoBox.prototype.write = function (adjLeft, adjRight) {
-	if (typeof this.deco === 'string') return '<e style="' + this.deco + '">' + this.content.write(adjLeft, adjRight) + '</e>';
+	if (typeof this.deco === 'string') return '<span class=e style="' + this.deco + '">' + this.content.write(adjLeft, adjRight) + '</span>';
 	else return this.content.write(adjLeft, adjRight)
 }
 
@@ -478,7 +507,7 @@ var FSBox = function (scale, content) {
 }
 FSBox.prototype = new Box;
 FSBox.prototype.write = function () {
-	return '<sc style="font-size:' + (this.scale * 100) + '%">' + this.content.write() + '</sc>'
+	return '<span class=sc style="font-size:' + (this.scale * 100) + '%">' + this.content.write() + '</span>'
 }
 
 var BigOpBox = function (content, scale, ascender, descender, shift) {
@@ -523,6 +552,7 @@ var layout = function (box, config) {
 
 exports.Box = Box;
 exports.CBox = CBox;
+exports.CSBox = CSBox;
 exports.VarBox = VarBox;
 exports.NumberBox = NumberBox;
 exports.CodeBox = CodeBox;
@@ -546,8 +576,10 @@ exports.SSBox = SSBox;
 exports.SSStackBox = SSStackBox;
 exports.FSBox = FSBox;
 exports.BigOpBox = BigOpBox;
+exports.LSpBox = LSpBox;
 
 exports.layoutSegment = function (boxes) {
 	return (new SegmentBox(boxes)).write()
 };
 exports.layout = layout;
+exports.TOPLEVEL_MATRIX_JOINER = TOPLEVEL_MATRIX_JOINER

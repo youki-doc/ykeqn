@@ -27,7 +27,10 @@ var layout = layouter.layout;
 
 var macros = require('./macros').macros;
 
+var TOPLEVEL_MATRIX_JOINER = layouter.TOPLEVEL_MATRIX_JOINER;
+
 var eqn = null;
+var eqn0 = null;
 var eqn_lex = null;
 var eqn_compile = null;
 var ID = 1;
@@ -87,8 +90,13 @@ var SPACE = 6;
 						}
 						terms.push(themacro.apply(macros, parameters))
 					} else {
-						var parameters = [terms[terms.length - 1]];
-						terms.length -= 1;
+						var parameters;
+						if(terms.length){
+							parameters = [terms[terms.length - 1]];
+							terms.length -= 1;
+						} else {
+							parameters = [new CBox('')]
+						}
 						for (var i = 1; i < arity; i++) {
 							parameters.push(term());
 						}
@@ -164,9 +172,12 @@ var SPACE = 6;
 	var encodeEqnSourceQuickPreview = function (source) {
 		return '<code class="h preview">' + ('' + source).replace(/&/g, '&amp;').replace(/\{/g, '&#123;').replace(/\}/g, '&#125;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</code>';
 	}
-	eqn = function (s, config, customMacros) {
+	eqn0 = function (s, config, customMacros) {
 		config = config || {};
-		return '<span class="eqn">' + encodeEqnSourceQuickPreview(s) + encodeEqnResultHtml(layout(compile(lex(('' + s).trim()), macros, config), config)) + '</span>'
+		return encodeEqnResultHtml(layout(compile(lex(('' + s).trim()), macros, config), config));
+	}
+	eqn = function(){
+		return '<span class="eqn">' + eqn0.apply(this, arguments) + '</span>'
 	}
 })();
 
@@ -227,8 +238,9 @@ exports.apply = function (scope, exports, runtime) {
 		var buf = '';
 		for (var i = 0; i < lines.length; i++) {
 			var line = lines[i];
-			var cells = line.split("&&");
-			buf += '<tr>' + cells.map(function (cell, j) { return '<td' + (alignment[j] ? ' style="text-align:' + alignment[j] + '"' : '') + '>' + eqn(cell) + '</td>' }).join('') + '</tr>'
+			var cells = line.split(";;");
+			var segs = eqn0(cells.map(x => '{' + x + '}').join('&!&!&!&')).split(TOPLEVEL_MATRIX_JOINER);
+			buf += '<tr>' + segs.map((s, j) => '<td' + (alignment[j] ? ' style="text-align:' + alignment[j] + '"':'') + '><span class="eqn">' + s + '</span></td>').join('\n') + '</tr>\n'
 		};
 		return scope.tags.table('class="eqn-align"', buf);
 	};

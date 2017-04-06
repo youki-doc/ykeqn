@@ -3,6 +3,7 @@ var parameters = require('./parameters')
 
 var Box = layouter.Box;
 var CBox = layouter.CBox;
+var CSBox = layouter.CSBox;
 var VarBox = layouter.VarBox;
 var NumberBox = layouter.NumberBox;
 var CodeBox = layouter.CodeBox;
@@ -26,6 +27,9 @@ var SSBox = layouter.SSBox;
 var SSStackBox = layouter.SSStackBox;
 var FSBox = layouter.FSBox;
 var BigOpBox = layouter.BigOpBox;
+var LSpBox = layouter.LSpBox;
+
+var TOPLEVEL_MATRIX_JOINER = layouter.TOPLEVEL_MATRIX_JOINER;
 
 var OPERATOR_SCALE = parameters.OPERATOR_SCALE;
 var INTEGRATE_SCALE = parameters.INTEGRATE_SCALE;
@@ -47,7 +51,7 @@ var OBM = function (s) {
 	return function () { return new OpBox(s) }
 }
 var XCBM = function (s) {
-	return function () { return new BCBox(s, 'xc', 'aschar') }
+	return function () { return new BCBox(s, 'xc', 'aschar', true) }
 }
 var BIGOPBM = function (s, scale, ascender, descender) {
 	return function () { return new BigOpBox(new OpBox(s, 'bop', 'nobreak'), OPERATOR_SCALE, ASCENDER_OPERATOR, DESCENDER_OPERATOR, OPERATOR_SHIFT) }
@@ -134,7 +138,21 @@ macros['rm'] = macros.fn = function (cb) {
 }
 macros['bf'] = function (cb) {
 	if (cb instanceof CBox) {
-		return new BfBox(cb.c)
+		return new CSBox(cb.c, 'b')
+	} else {
+		return cb
+	}
+}
+macros['bi'] = function (cb) {
+	if (cb instanceof CBox) {
+		return new CSBox(cb.c, 'b', 'class="boldital"')
+	} else {
+		return cb
+	}
+}
+macros['sc'] = function (cb) {
+	if (cb instanceof CBox) {
+		return new CSBox(cb.c, 'i', 'class="smallcap"')
 	} else {
 		return cb
 	}
@@ -205,6 +223,11 @@ macros['&&'] = function (left, right) {
 		m[j] = r;
 	};
 	return new MatrixBox(m)
+}
+macros['&!&!&!&'] = function(left, right) {
+    var m = macros['&&'].call(this, left, right)
+	m.joiner = TOPLEVEL_MATRIX_JOINER
+	return m;
 }
 macros['///'] = function (upper, lower) {
 	if (!(upper instanceof MatrixBox)) upper = new MatrixBox([[upper]])
@@ -327,7 +350,7 @@ void (function () {
 	macros['thetasym'] = VBM("\u03D1");
 	macros['upsih'] = VBM("\u03D2");
 	macros['piv'] = VBM("\u03D6");
-	macros['~'] = SPBM('\u2004')
+	macros['~'] = function(){ return new LSpBox('') }
 	macros['~~'] = SPBM("\u2002");
 	macros['~~~'] = SPBM("\u2003");
 	macros['quad'] = SPBM("\u2003");
@@ -518,7 +541,7 @@ void (function () {
 	macros.underleftarrow = comb("\u20EE");
 	macros.underrightarrow = comb("\u20EF");
 
-	macros.Bbbsum = bigop("\u2140");
+	macros.bbsum = bigop("\u2140");
 	macros.prod = bigop("\u220F");
 	macros.coprod = bigop("\u2210");
 	macros.sum = bigop("\u2211");
@@ -796,16 +819,16 @@ void (function () {
 	macros.Planckconst = sym("\u210E");
 	macros.mho = sym("\u2127");
 	macros.Finv = sym("\u2132");
-	macros.Bbbpi = sym("\u213C");
+	macros.bbpi = sym("\u213C");
 	macros.Game = sym("\u2141");
 	macros.sansLturned = sym("\u2142");
 	macros.sansLmirrored = sym("\u2143");
 	macros.Yup = sym("\u2144");
-	macros.mitBbbD = sym("\u2145");
-	macros.mitBbbd = sym("\u2146");
-	macros.mitBbbe = sym("\u2147");
-	macros.mitBbbi = sym("\u2148");
-	macros.mitBbbj = sym("\u2149");
+	macros.mitbbD = sym("\u2145");
+	macros.mitbbd = sym("\u2146");
+	macros.mitbbe = sym("\u2147");
+	macros.mitbbi = sym("\u2148");
+	macros.mitbbj = sym("\u2149");
 	macros.PropertyLine = sym("\u214A");
 	macros.updownarrowbar = sym("\u21A8");
 	macros.linefeed = sym("\u21B4");
@@ -1168,16 +1191,16 @@ void (function () {
 	macros.mbfseven = sym("&#x1D7D5;");
 	macros.mbfeight = sym("&#x1D7D6;");
 	macros.mbfnine = sym("&#x1D7D7;");
-	macros.Bbbzero = sym("&#x1D7D8;");
-	macros.Bbbone = sym("&#x1D7D9;");
-	macros.Bbbtwo = sym("&#x1D7DA;");
-	macros.Bbbthree = sym("&#x1D7DB;");
-	macros.Bbbfour = sym("&#x1D7DC;");
-	macros.Bbbfive = sym("&#x1D7DD;");
-	macros.Bbbsix = sym("&#x1D7DE;");
-	macros.Bbbseven = sym("&#x1D7DF;");
-	macros.Bbbeight = sym("&#x1D7E0;");
-	macros.Bbbnine = sym("&#x1D7E1;");
+	macros.bbzero = sym("&#x1D7D8;");
+	macros.bbone = sym("&#x1D7D9;");
+	macros.bbtwo = sym("&#x1D7DA;");
+	macros.bbthree = sym("&#x1D7DB;");
+	macros.bbfour = sym("&#x1D7DC;");
+	macros.bbfive = sym("&#x1D7DD;");
+	macros.bbsix = sym("&#x1D7DE;");
+	macros.bbseven = sym("&#x1D7DF;");
+	macros.bbeight = sym("&#x1D7E0;");
+	macros.bbnine = sym("&#x1D7E1;");
 	macros.msanszero = sym("&#x1D7E2;");
 	macros.msansone = sym("&#x1D7E3;");
 	macros.msanstwo = sym("&#x1D7E4;");
@@ -1227,6 +1250,7 @@ void (function () {
 	macros.nrightarrow = op("\u219B");
 	macros.leftwavearrow = op("\u219C");
 	macros.rightwavearrow = op("\u219D");
+	macros.leadsto = op("\u219D");
 	macros.twoheadleftarrow = op("\u219E");
 	macros.twoheaduparrow = op("\u219F");
 	macros.twoheadrightarrow = op("\u21A0");
@@ -1890,51 +1914,51 @@ void (function () {
 	macros.mfrakx = mathchar("&#x1D535;");
 	macros.mfraky = mathchar("&#x1D536;");
 	macros.mfrakz = mathchar("&#x1D537;");
-	macros.BbbA = mathchar("&#x1D538;");
-	macros.BbbB = mathchar("&#x1D539;");
-	macros.BbbD = mathchar("&#x1D53B;");
-	macros.BbbE = mathchar("&#x1D53C;");
-	macros.BbbF = mathchar("&#x1D53D;");
-	macros.BbbG = mathchar("&#x1D53E;");
-	macros.BbbI = mathchar("&#x1D540;");
-	macros.BbbJ = mathchar("&#x1D541;");
-	macros.BbbK = mathchar("&#x1D542;");
-	macros.BbbL = mathchar("&#x1D543;");
-	macros.BbbM = mathchar("&#x1D544;");
-	macros.BbbO = mathchar("&#x1D546;");
-	macros.BbbS = mathchar("&#x1D54A;");
-	macros.BbbT = mathchar("&#x1D54B;");
-	macros.BbbU = mathchar("&#x1D54C;");
-	macros.BbbV = mathchar("&#x1D54D;");
-	macros.BbbW = mathchar("&#x1D54E;");
-	macros.BbbX = mathchar("&#x1D54F;");
-	macros.BbbY = mathchar("&#x1D550;");
-	macros.Bbba = mathchar("&#x1D552;");
-	macros.Bbbb = mathchar("&#x1D553;");
-	macros.Bbbc = mathchar("&#x1D554;");
-	macros.Bbbd = mathchar("&#x1D555;");
-	macros.Bbbe = mathchar("&#x1D556;");
-	macros.Bbbf = mathchar("&#x1D557;");
-	macros.Bbbg = mathchar("&#x1D558;");
-	macros.Bbbh = mathchar("&#x1D559;");
-	macros.Bbbi = mathchar("&#x1D55A;");
-	macros.Bbbj = mathchar("&#x1D55B;");
-	macros.Bbbk = mathchar("&#x1D55C;");
-	macros.Bbbl = mathchar("&#x1D55D;");
-	macros.Bbbm = mathchar("&#x1D55E;");
-	macros.Bbbn = mathchar("&#x1D55F;");
-	macros.Bbbo = mathchar("&#x1D560;");
-	macros.Bbbp = mathchar("&#x1D561;");
-	macros.Bbbq = mathchar("&#x1D562;");
-	macros.Bbbr = mathchar("&#x1D563;");
-	macros.Bbbs = mathchar("&#x1D564;");
-	macros.Bbbt = mathchar("&#x1D565;");
-	macros.Bbbu = mathchar("&#x1D566;");
-	macros.Bbbv = mathchar("&#x1D567;");
-	macros.Bbbw = mathchar("&#x1D568;");
-	macros.Bbbx = mathchar("&#x1D569;");
-	macros.Bbby = mathchar("&#x1D56A;");
-	macros.Bbbz = mathchar("&#x1D56B;");
+	macros.bbA = mathchar("&#x1D538;");
+	macros.bbB = mathchar("&#x1D539;");
+	macros.bbD = mathchar("&#x1D53B;");
+	macros.bbE = mathchar("&#x1D53C;");
+	macros.bbF = mathchar("&#x1D53D;");
+	macros.bbG = mathchar("&#x1D53E;");
+	macros.bbI = mathchar("&#x1D540;");
+	macros.bbJ = mathchar("&#x1D541;");
+	macros.bbK = mathchar("&#x1D542;");
+	macros.bbL = mathchar("&#x1D543;");
+	macros.bbM = mathchar("&#x1D544;");
+	macros.bbO = mathchar("&#x1D546;");
+	macros.bbS = mathchar("&#x1D54A;");
+	macros.bbT = mathchar("&#x1D54B;");
+	macros.bbU = mathchar("&#x1D54C;");
+	macros.bbV = mathchar("&#x1D54D;");
+	macros.bbW = mathchar("&#x1D54E;");
+	macros.bbX = mathchar("&#x1D54F;");
+	macros.bbY = mathchar("&#x1D550;");
+	macros.bba = mathchar("&#x1D552;");
+	macros.bbb = mathchar("&#x1D553;");
+	macros.bbc = mathchar("&#x1D554;");
+	macros.bbd = mathchar("&#x1D555;");
+	macros.bbe = mathchar("&#x1D556;");
+	macros.bbf = mathchar("&#x1D557;");
+	macros.bbg = mathchar("&#x1D558;");
+	macros.bbh = mathchar("&#x1D559;");
+	macros.bbi = mathchar("&#x1D55A;");
+	macros.bbj = mathchar("&#x1D55B;");
+	macros.bbk = mathchar("&#x1D55C;");
+	macros.bbl = mathchar("&#x1D55D;");
+	macros.bbm = mathchar("&#x1D55E;");
+	macros.bbn = mathchar("&#x1D55F;");
+	macros.bbo = mathchar("&#x1D560;");
+	macros.bbp = mathchar("&#x1D561;");
+	macros.bbq = mathchar("&#x1D562;");
+	macros.bbr = mathchar("&#x1D563;");
+	macros.bbs = mathchar("&#x1D564;");
+	macros.bbt = mathchar("&#x1D565;");
+	macros.bbu = mathchar("&#x1D566;");
+	macros.bbv = mathchar("&#x1D567;");
+	macros.bbw = mathchar("&#x1D568;");
+	macros.bbx = mathchar("&#x1D569;");
+	macros.bby = mathchar("&#x1D56A;");
+	macros.bbz = mathchar("&#x1D56B;");
 	macros.msansA = mathchar("&#x1D5A0;");
 	macros.msansB = mathchar("&#x1D5A1;");
 	macros.msansC = mathchar("&#x1D5A2;");
@@ -2415,24 +2439,24 @@ void (function () {
 	macros.mbfitsansvarpi = mathchar("&#x1D7C9;");
 
 	macros.matheth = mathchar("\u00F0");
-	macros.BbbC = mathchar("\u2102");
+	macros.bbC = mathchar("\u2102");
 	macros.mscrg = mathchar("\u210A");
 	macros.mscrH = mathchar("\u210B");
 	macros.mfrakH = mathchar("\u210C");
-	macros.BbbH = mathchar("\u210D");
+	macros.bbH = mathchar("\u210D");
 	macros.hslash = mathchar("\u210F");
 	macros.mscrI = mathchar("\u2110");
 	macros.Im = mathchar("\u2111");
 	macros.mscrL = mathchar("\u2112");
 	macros.ell = mathchar("\u2113");
-	macros.BbbN = mathchar("\u2115");
+	macros.bbN = mathchar("\u2115");
 	macros.wp = mathchar("\u2118");
-	macros.BbbP = mathchar("\u2119");
-	macros.BbbQ = mathchar("\u211A");
+	macros.bbP = mathchar("\u2119");
+	macros.bbQ = mathchar("\u211A");
 	macros.mscrR = mathchar("\u211B");
 	macros.Re = mathchar("\u211C");
-	macros.BbbR = mathchar("\u211D");
-	macros.BbbZ = mathchar("\u2124");
+	macros.bbR = mathchar("\u211D");
+	macros.bbZ = mathchar("\u2124");
 	macros.mfrakZ = mathchar("\u2128");
 	macros.turnediota = mathchar("\u2129");
 	macros.Angstrom = mathchar("\u212B");
@@ -2447,9 +2471,9 @@ void (function () {
 	macros.beth = mathchar("\u2136");
 	macros.gimel = mathchar("\u2137");
 	macros.daleth = mathchar("\u2138");
-	macros.Bbbgamma = mathchar("\u213D");
-	macros.BbbGamma = mathchar("\u213E");
-	macros.BbbPi = mathchar("\u213F");
+	macros.bbgamma = mathchar("\u213D");
+	macros.bbGamma = mathchar("\u213E");
+	macros.bbPi = mathchar("\u213F");
 	macros.partial = mathchar("\u2202");
 	macros.nabla = mathchar("\u2207");
 	macros.imath = mathchar("&#x1D6A4;");
